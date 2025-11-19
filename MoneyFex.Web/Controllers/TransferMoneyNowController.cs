@@ -7,6 +7,7 @@ using MoneyFex.Core.Interfaces;
 using MoneyFex.Infrastructure.Data;
 using MoneyFex.Web.Services;
 using MoneyFex.Web.ViewModels;
+using Npgsql;
 
 namespace MoneyFex.Web.Controllers;
 
@@ -246,7 +247,7 @@ public class TransferMoneyNowController : Controller
         if (!string.IsNullOrEmpty(senderIdStr) && int.TryParse(senderIdStr, out var existingSenderId))
         {
             var existingSender = await _context.Senders.FindAsync(existingSenderId);
-            if (existingSender != null)
+            if (existingSender != null && existingSender.IsActive)
             {
                 return existingSenderId;
             }
@@ -254,38 +255,77 @@ public class TransferMoneyNowController : Controller
 
         // Get customer username from session
         var username = HttpContext.Session.GetString("CustomerUsername") ?? "customer";
+        var email = $"{username}@moneyfex.com";
 
-        // Try to find existing sender by email (using username as email for POC)
-        var sender = await _context.Senders
-            .FirstOrDefaultAsync(s => s.Email == $"{username}@moneyfex.com");
-
-        if (sender != null)
+        // Use a transaction to handle race conditions
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            HttpContext.Session.SetString(CUSTOMER_SENDER_ID_KEY, sender.Id.ToString());
-            return sender.Id;
+            // Try to find existing sender by email (using username as email for POC)
+            var sender = await _context.Senders
+                .FirstOrDefaultAsync(s => s.Email == email);
+
+            if (sender != null)
+            {
+                HttpContext.Session.SetString(CUSTOMER_SENDER_ID_KEY, sender.Id.ToString());
+                await transaction.CommitAsync();
+                return sender.Id;
+            }
+
+            // Create new sender for customer
+            sender = new MoneyFex.Core.Entities.Sender
+            {
+                FirstName = "Customer",
+                LastName = "User",
+                Email = email,
+                PhoneNumber = "+44123456789",
+                CountryCode = "GB",
+                IsActive = true,
+                IsBusiness = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Senders.Add(sender);
+            
+            try
+            {
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                
+                HttpContext.Session.SetString(CUSTOMER_SENDER_ID_KEY, sender.Id.ToString());
+                return sender.Id;
+            }
+            catch (DbUpdateException ex)
+            {
+                // Handle duplicate key or foreign key constraint violations
+                await transaction.RollbackAsync();
+                
+                // Check if it's a PostgreSQL constraint violation
+                var pgEx = ex.InnerException as PostgresException;
+                if (pgEx != null && (pgEx.SqlState == "23505" || pgEx.SqlState == "23503"))
+                {
+                    // Try to find the sender again (might have been created by another request)
+                    sender = await _context.Senders
+                        .FirstOrDefaultAsync(s => s.Email == email);
+                    
+                    if (sender != null)
+                    {
+                        HttpContext.Session.SetString(CUSTOMER_SENDER_ID_KEY, sender.Id.ToString());
+                        return sender.Id;
+                    }
+                }
+                
+                _logger.LogError(ex, $"Failed to create sender for customer {username}");
+                return 0;
+            }
         }
-
-        // Create new sender for customer
-        var defaultCountry = await _context.Countries.FirstOrDefaultAsync(c => c.CountryCode == "GB");
-        
-        sender = new MoneyFex.Core.Entities.Sender
+        catch (Exception ex)
         {
-            FirstName = "Customer",
-            LastName = "User",
-            Email = $"{username}@moneyfex.com",
-            PhoneNumber = "+44123456789",
-            CountryCode = "GB",
-            IsActive = true,
-            IsBusiness = false,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        _context.Senders.Add(sender);
-        await _context.SaveChangesAsync();
-
-        HttpContext.Session.SetString(CUSTOMER_SENDER_ID_KEY, sender.Id.ToString());
-        return sender.Id;
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, $"Error in GetOrCreateSenderForCustomerAsync for customer {username}");
+            return 0;
+        }
     }
 }
 

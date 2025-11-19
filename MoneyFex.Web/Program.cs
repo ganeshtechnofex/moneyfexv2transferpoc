@@ -57,7 +57,7 @@ var app = builder.Build();
 // Apply database migrations and seed data on startup
 try
 {
-    await DatabaseInitializer.InitializeAsync(app.Services);
+   await DatabaseInitializer.InitializeAsync(app.Services);
 }
 catch (Exception ex)
 {

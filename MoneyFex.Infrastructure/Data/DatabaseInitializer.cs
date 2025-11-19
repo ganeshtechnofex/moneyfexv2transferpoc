@@ -29,7 +29,7 @@ public static class DatabaseInitializer
                 logger.LogInformation("No pending migrations detected.");
             }
 
-            DbSeeder.SeedDatabase(context);
+            //DbSeeder.SeedDatabase(context);
         }
         catch (Exception ex)
         {
