@@ -1,0 +1,139 @@
+@model IEnumerable<MoneyFex.Core.Entities.Transaction>
+@{
+    ViewData["Title"] = "All Transactions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="real_form pattern2 pdt40">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="login_signup mb50 clearfix">
+                    <h3 class="text-center">All Transactions</h3>
+                    <hr>
+                    
+                    <div class="filter-section mb30">
+                        <form asp-action="Index" method="get" class="row">
+                            <div class="col-md-3">
+                                <div class="form-group mb20">
+                                    <input type="text" name="searchTerm" class="form-blue" placeholder="Search by Receipt No..." value="@ViewBag.SearchTerm" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb20">
+                                    <input type="number" name="senderId" class="form-blue" placeholder="Sender ID" value="@ViewBag.SenderId" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb20">
+                                    <input type="date" name="fromDate" class="form-blue" value="@(ViewBag.FromDate?.ToString("yyyy-MM-dd"))" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb20">
+                                    <input type="date" name="toDate" class="form-blue" value="@(ViewBag.ToDate?.ToString("yyyy-MM-dd"))" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb20">
+                                    <select name="status" class="form-blue" asp-items="Html.GetEnumSelectList<MoneyFex.Core.Entities.Enums.TransactionStatus>()">
+                                        <option value="">All Statuses</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="form-group mb20">
+                                    <button type="submit" class="btn-next fbtn">Filter</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Receipt No</th>
+                                    <th>Date</th>
+                                    <th>Sender</th>
+                                    <th class="hidden-xs">Module</th>
+                                    <th>Sending Amount</th>
+                                    <th>Receiving Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    @foreach (var transaction in Model)
+                                    {
+                                        <tr>
+                                            <td><strong>@transaction.ReceiptNo</strong></td>
+                                            <td>@transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td>
+                                                @(transaction.Sender?.FirstName ?? "N/A") @(transaction.Sender?.LastName ?? "")
+                                                <div class="hidden-xs text-muted small">@(transaction.Sender?.Email ?? "")</div>
+                                            </td>
+                                            <td class="hidden-xs">@transaction.TransactionModule</td>
+                                            <td class="text-primary"><strong>@transaction.SendingCurrency @transaction.SendingAmount.ToString("N2")</strong></td>
+                                            <td class="text-success"><strong>@transaction.ReceivingCurrency @transaction.ReceivingAmount.ToString("N2")</strong></td>
+                                            <td>
+                                                <span class="label @GetStatusBadgeClass(transaction.Status)">
+                                                    @transaction.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("Details", new { id = transaction.Id })" class="btn btn-sm btn-info" title="View Details">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center">No transactions found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-right mt20">
+                        <button class="btn-next fbtn" onclick="exportToCSV()">
+                            <i class="fa fa-download"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(MoneyFex.Core.Entities.Enums.TransactionStatus status)
+    {
+        return status switch
+        {
+            MoneyFex.Core.Entities.Enums.TransactionStatus.Paid => "label-success",
+            MoneyFex.Core.Entities.Enums.TransactionStatus.PaymentPending => "label-warning",
+            MoneyFex.Core.Entities.Enums.TransactionStatus.InProgress => "label-warning",
+            MoneyFex.Core.Entities.Enums.TransactionStatus.Failed => "label-danger",
+            MoneyFex.Core.Entities.Enums.TransactionStatus.Cancelled => "label-default",
+            MoneyFex.Core.Entities.Enums.TransactionStatus.Completed => "label-success",
+            MoneyFex.Core.Entities.Enums.TransactionStatus.Received => "label-success",
+            _ => "label-default"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        function exportToCSV() {
+            // TODO: Implement CSV export functionality
+            alert('CSV export functionality will be implemented soon.');
+        }
+    </script>
+}

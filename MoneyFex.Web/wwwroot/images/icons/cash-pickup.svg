@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="cashGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#02b6ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003d55;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <ellipse cx="32" cy="40" rx="20" ry="16" fill="url(#cashGradient)"/>
+  <path d="M20 32 Q32 24 44 32" stroke="#fff" stroke-width="2" fill="none"/>
+  <path d="M20 40 Q32 32 44 40" stroke="#fff" stroke-width="2" fill="none"/>
+  <path d="M20 48 Q32 40 44 48" stroke="#fff" stroke-width="2" fill="none"/>
+  <circle cx="28" cy="36" r="2" fill="#fff"/>
+  <circle cx="36" cy="36" r="2" fill="#fff"/>
+  <circle cx="28" cy="44" r="2" fill="#fff"/>
+  <circle cx="36" cy="44" r="2" fill="#fff"/>
+  <path d="M32 16 L28 24 L36 24 Z" fill="url(#cashGradient)"/>
+  <rect x="30" y="24" width="4" height="8" fill="url(#cashGradient)"/>
+</svg>
+

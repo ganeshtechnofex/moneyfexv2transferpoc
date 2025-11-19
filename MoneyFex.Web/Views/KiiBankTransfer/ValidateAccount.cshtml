@@ -1,0 +1,69 @@
+@model MoneyFex.Web.ViewModels.KiiBankRecipientViewModel
+@{
+    ViewData["Title"] = "Validate KiiBank Account";
+    Layout = "_Layout";
+}
+
+@using (Html.BeginForm("ValidateAccount", "KiiBankTransfer", FormMethod.Post, new { @Id = "ValidateAccount" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(x => x.AccountName)
+    @Html.HiddenFor(x => x.AccountNumber)
+    
+    <div class="real_form pattern2 pdt40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-lg-offset-3 col-md-6 col-md-offset-3">
+                    <div class="login_signup nopadding mb50 clearfix text-center">
+                        <h3 class="mt20">KiiBank account deposit</h3>
+                        <hr>
+                        <div class="pinside50 pdt10 pdb20">
+                            <div class="form-group">
+                                @Html.TextBoxFor(x => x.AccountNumber, new
+                                {
+                                    @class = "form-control form-blue",
+                                    @placeholder = "Enter account number",
+                                    @id = "AccountNumber",
+                                    @readonly = "readonly"
+                                })
+                                <div class="user-line"></div>
+                                <div class="user-grid">
+                                    <div class="owner">
+                                        <div class="icon">
+                                            <i class="fa fa-user"></i>
+                                        </div>
+                                        <span>Owner</span>
+                                    </div>
+                                    <div>
+                                        <span class="name">@Model.AccountName</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.DropDownListFor(x => x.ReasonForTransfer, 
+                                    Html.GetEnumSelectList<MoneyFex.Core.Entities.Enums.ReasonForTransfer>(), 
+                                    "Select Reason for Transfer", 
+                                    new { @class = "form-control form-blue" })
+                                @Html.ValidationMessageFor(model => model.ReasonForTransfer, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+                        <!-- back btn -->
+                        <hr>
+                        <div class="clearfix mb20">
+                            <a href="javascript:history.back()" class="">
+                                <i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back
+                            </a>
+                        </div>
+                        <!-- back btn end-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

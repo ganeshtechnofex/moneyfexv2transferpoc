@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MoneyFex Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/moneyfex-main.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/legacy-style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <style>
+        .admin-sidebar {
+            min-height: 100vh;
+            background-color: #2c3e50;
+            padding: 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .admin-sidebar .logo {
+            padding: 20px;
+            background-color: #1a252f;
+            color: #fff;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .admin-sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .admin-sidebar ul li {
+            border-bottom: 1px solid #34495e;
+        }
+        .admin-sidebar ul li a {
+            display: block;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .admin-sidebar ul li a:hover,
+        .admin-sidebar ul li a.active {
+            background-color: #34495e;
+            color: #fff;
+        }
+        .admin-sidebar ul li a i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        .admin-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background-color: #f4f6f8;
+        }
+        .admin-header {
+            background-color: #fff;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-header h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info span {
+            color: #2c3e50;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+            color: #fff;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="admin-sidebar">
+        <div class="logo">
+            <i class="fa fa-money"></i> MoneyFex Admin
+        </div>
+        <ul>
+            <li>
+                <a href="@Url.Action("Dashboard", "Staff")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Staff" && ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                    <i class="fa fa-dashboard"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Index", "TransactionHistory")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "TransactionHistory" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                    <i class="fa fa-list"></i> Recent Transactions
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="admin-content">
+        <div class="admin-header">
+            <h2>@ViewData["Title"]</h2>
+            <div class="user-info">
+                <span><i class="fa fa-user"></i> @(ViewBag.Username ?? Context.Session.GetString("StaffUsername") ?? "Admin")</span>
+                <form asp-controller="StaffLogin" asp-action="Logout" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="logout-btn">
+                        <i class="fa fa-sign-out"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+        @RenderBody()
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

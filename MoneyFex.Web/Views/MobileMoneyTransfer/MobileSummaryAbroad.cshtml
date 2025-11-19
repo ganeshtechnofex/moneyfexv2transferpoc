@@ -1,0 +1,164 @@
+@model MoneyFex.Web.ViewModels.MobileTransferSummaryViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Transfer Summary";
+    var receiverFirstName = ViewBag.ReceiverFirstName as string ?? Model.ReceiverName?.Split(' ').FirstOrDefault() ?? "Receiver";
+}
+
+@using (Html.BeginForm("MobileSummaryAbroad", "MobileMoneyTransfer", FormMethod.Post, new { id = "summaryForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.TransactionId)
+
+    <div class="real_form pattern2 pdt40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="flag-icon flag-icon-@ViewBag.ReceivingCountry"></i> @ViewBag.ReceivingCountryCurrency @ViewBag.TransferMethod</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-money"></i> Amount @ViewBag.SendingCountryCurrency @ViewBag.SendingAmount</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-user"></i> @ViewBag.ReceiverName</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="MobileMoneyTransfer" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="login_signup clearfix text-center">
+                        <h3 class="text-left">Payment Summary</h3>
+                        <hr />
+                        <div class="text-left">
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>Amount</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">
+                                        @Model.SendingCurrencySymbol@Model.Amount.ToString("N2")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>Fee</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">
+                                        @Model.SendingCurrencySymbol@Model.Fee.ToString("N2")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>You'll Pay</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">
+                                        @Model.SendingCurrencySymbol@Model.PaidAmount.ToString("N2")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>@receiverFirstName will receive</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">
+                                        @Model.ReceivingCurrencySymbol@Model.ReceivedAmount.ToString("N2")
+                                    </div>
+                                </div>
+                            </div>
+                            @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                        </div>
+                        <hr />
+                        <h4 class="text-left mt30 text-bold">
+                            Please note: By completing this transaction you acknowledge our terms & conditions.
+                            Your card will be immediately debited on completion of this transfer.
+                        </h4>
+                    </div>
+                    <div class="text-center clearfix">
+                        <hr />
+                        <button type="submit" id="submitSummary" class="btn btn-primary btn-lg">Send Money Now</button>
+                        <div class="clearfix mb30"></div>
+                        <a asp-action="Index" class=""><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+    <style>
+        .summary-row {
+            margin-bottom: 15px;
+        }
+
+        .form-text {
+            background: #f5f6fb;
+            border: 1px solid #d5e1f3;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            $("#submitSummary").on("click", function () {
+                $("#loader").show();
+            });
+        })();
+    </script>
+}

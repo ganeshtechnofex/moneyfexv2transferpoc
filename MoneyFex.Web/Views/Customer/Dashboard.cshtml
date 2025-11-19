@@ -1,0 +1,907 @@
+@using MoneyFex.Core.Entities.Enums
+@{
+    ViewData["Title"] = "Customer Dashboard";
+    var username = ViewBag.Username as string ?? "Customer";
+    var pendingTransactions = ViewBag.PendingTransactions as int? ?? 0;
+    var todayVolume = ViewBag.TodayVolume as decimal? ?? 0;
+    var currencySymbol = ViewBag.CurrencySymbol as string ?? "£";
+    var complianceAlerts = ViewBag.ComplianceAlerts as int? ?? 0;
+    var recentTransactions = ViewBag.RecentTransactions as List<dynamic> ?? new List<dynamic>();
+    
+    // Get greeting based on time of day
+    var hour = DateTime.UtcNow.Hour;
+    var greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+}
+
+<div class="customer-dashboard">
+    <aside class="sidebar">
+        <div class="sidebar__brand">
+            <div class="sidebar__logo">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="sidebar__user-info">
+                <small class="sidebar__role">Customer</small>
+                <h6 class="sidebar__username">@username</h6>
+            </div>
+        </div>
+
+        <nav class="sidebar__nav">
+            <a asp-controller="Customer" asp-action="Dashboard" class="sidebar__nav-item active">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a asp-controller="TransferMoneyNow" asp-action="Index" class="sidebar__nav-item">
+                <i class="bi bi-send-fill"></i>
+                <span>Transfer Money</span>
+            </a>
+            <a asp-controller="Transactions" asp-action="MyTransactions" class="sidebar__nav-item">
+                <i class="bi bi-clock-history"></i>
+                <span>Transactions</span>
+            </a>
+            <a asp-controller="Customer" asp-action="Profile" class="sidebar__nav-item">
+                <i class="bi bi-person-circle"></i>
+                <span>Profile & Limits</span>
+            </a>
+        </nav>
+
+        <div class="sidebar__footer">
+            <form asp-controller="CustomerLogin" asp-action="Logout" method="post">
+                <button type="submit" class="sidebar__logout-btn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="dashboard-content">
+        <div class="dashboard-header">
+            <div class="dashboard-header__content">
+                <h1 class="dashboard-title">@greeting, @username!</h1>
+                <p class="dashboard-subtitle">Here's what's happening with your transfers today</p>
+            </div>
+            <div class="dashboard-header__actions">
+                <a asp-controller="TransferMoneyNow" asp-action="Index" class="btn-primary-action">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>New Transfer</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics Widgets -->
+        <div class="stats-grid">
+            <div class="stat-card stat-card--primary">
+                <div class="stat-card__background">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div class="stat-card__content">
+                    <div class="stat-card__icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div class="stat-card__info">
+                        <span class="stat-card__label">LIVE TRANSFERS</span>
+                        <h3 class="stat-card__value">
+                            <span class="stat-card__number">@pendingTransactions</span>
+                            <span class="stat-card__suffix">pending</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card--success">
+                <div class="stat-card__background">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="stat-card__content">
+                    <div class="stat-card__icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div class="stat-card__info">
+                        <span class="stat-card__label">VOLUME TODAY</span>
+                        <h3 class="stat-card__value">
+                            <span class="stat-card__number">@currencySymbol@todayVolume.ToString("N2")</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card--warning">
+                <div class="stat-card__background">
+                    <i class="bi bi-shield-exclamation"></i>
+                </div>
+                <div class="stat-card__content">
+                    <div class="stat-card__icon">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="stat-card__info">
+                        <span class="stat-card__label">COMPLIANCE ALERTS</span>
+                        <h3 class="stat-card__value">
+                            <span class="stat-card__number">@complianceAlerts</span>
+                            <span class="stat-card__suffix">open</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="dashboard-grid">
+            <!-- Quick Shortcuts Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card__header">
+                    <div class="dashboard-card__title">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        <h3>Quick Shortcuts</h3>
+                    </div>
+                    <button class="btn-toggle" onclick="toggleShortcuts()" title="Minimize">
+                        <i class="bi bi-dash-lg"></i>
+                    </button>
+                </div>
+                <div class="dashboard-card__body" id="shortcutsContainer">
+                    <div class="shortcuts-grid">
+                        <a asp-controller="Transactions" asp-action="MyTransactions" class="shortcut-item">
+                            <div class="shortcut-item__icon shortcut-item__icon--purple">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <span class="shortcut-item__label">Recent Transfers</span>
+                        </a>
+                        <a asp-controller="Transactions" asp-action="MyTransactions" class="shortcut-item">
+                            <div class="shortcut-item__icon shortcut-item__icon--blue">
+                                <i class="bi bi-list-task"></i>
+                            </div>
+                            <span class="shortcut-item__label">Manage Queue</span>
+                        </a>
+                        <a asp-controller="TransferMoneyNow" asp-action="Index" class="shortcut-item">
+                            <div class="shortcut-item__icon shortcut-item__icon--green">
+                                <i class="bi bi-phone-vibrate"></i>
+                            </div>
+                            <span class="shortcut-item__label">Mobile Transfers</span>
+                        </a>
+                        <a asp-controller="TransferMoneyNow" asp-action="Index" class="shortcut-item">
+                            <div class="shortcut-item__icon shortcut-item__icon--orange">
+                                <i class="bi bi-briefcase-fill"></i>
+                            </div>
+                            <span class="shortcut-item__label">Cash Payouts</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Activity Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card__header">
+                    <div class="dashboard-card__title">
+                        <i class="bi bi-activity"></i>
+                        <h3>Live Activity</h3>
+                    </div>
+                    <span class="activity-badge">@recentTransactions.Count()</span>
+                </div>
+                <div class="dashboard-card__body">
+                    @if (recentTransactions != null && recentTransactions.Any())
+                    {
+                        <div class="activity-feed">
+                            @foreach (var transaction in recentTransactions)
+                            {
+                                <div class="activity-item">
+                                    <div class="activity-item__icon">
+                                        @{
+                                            var status = (TransactionStatus)transaction.Status;
+                                            var iconClass = status == TransactionStatus.Paid || status == TransactionStatus.Completed
+                                                ? "bi-check-circle-fill activity-item__icon--success"
+                                                : status == TransactionStatus.PaymentPending || status == TransactionStatus.InProgress
+                                                    ? "bi-hourglass-split activity-item__icon--warning"
+                                                    : "bi-info-circle-fill activity-item__icon--info";
+                                        }
+                                        <i class="bi @iconClass"></i>
+                                    </div>
+                                    <div class="activity-item__content">
+                                        <div class="activity-item__title">@GetTransactionTypeText(transaction)</div>
+                                        <div class="activity-item__details">@GetTransactionDetails(transaction)</div>
+                                        <div class="activity-item__time">
+                                            <i class="bi bi-clock"></i>
+                                            @GetTimeAgo((DateTime)transaction.TransactionDate)
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <div class="empty-state__icon">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+                            <h4 class="empty-state__title">No Recent Activity</h4>
+                            <p class="empty-state__text">Your transaction history will appear here</p>
+                            <a asp-controller="TransferMoneyNow" asp-action="Index" class="btn-secondary">
+                                <i class="bi bi-plus-circle"></i>
+                                Start Your First Transfer
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+@functions {
+    private string GetTransactionTypeText(dynamic transaction)
+    {
+        var status = (TransactionStatus)transaction.Status;
+        if (status == TransactionStatus.Paid || status == TransactionStatus.Completed)
+        {
+            return "Transfer Completed";
+        }
+        else if (status == TransactionStatus.PaymentPending)
+        {
+            return "Payment Pending";
+        }
+        else if (status == TransactionStatus.InProgress)
+        {
+            return "Transfer In Progress";
+        }
+        else if (status == TransactionStatus.IdCheckInProgress)
+        {
+            return "ID Verification Required";
+        }
+        return "Transfer Updated";
+    }
+
+    private string GetTransactionDetails(dynamic transaction)
+    {
+        var amount = transaction.ReceivingAmount?.ToString("N2") ?? "0.00";
+        var currency = transaction.ReceivingCurrency?.ToString() ?? "";
+        var countryCode = transaction.ReceivingCountryCode?.ToString() ?? "";
+        
+        var countryName = countryCode switch
+        {
+            "NG" => "Lagos",
+            "GH" => "Accra",
+            "KE" => "Nairobi",
+            "ZA" => "Johannesburg",
+            "UG" => "Kampala",
+            "TZ" => "Dar es Salaam",
+            _ => countryCode
+        };
+
+        return $"{currency} {amount} – {countryName}";
+    }
+
+    private string GetTimeAgo(DateTime transactionDate)
+    {
+        var timeSpan = DateTime.UtcNow - transactionDate;
+        
+        if (timeSpan.TotalMinutes < 1)
+            return "Just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes}m ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours}h ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays}d ago";
+        
+        return transactionDate.ToString("MMM d, yyyy");
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .customer-dashboard {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            background: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            color: #fff;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar__brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar__logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar__user-info {
+            flex: 1;
+        }
+
+        .sidebar__role {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar__username {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sidebar__nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .sidebar__nav-item {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 0.875rem 1rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .sidebar__nav-item i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar__nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .sidebar__nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar__footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar__logout-btn {
+            width: 100%;
+            background: rgba(220, 53, 69, 0.2);
+            color: #fff;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar__logout-btn:hover {
+            background: rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.5);
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            gap: 2rem;
+        }
+
+        .dashboard-header__content {
+            flex: 1;
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.2;
+        }
+
+        .dashboard-subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .dashboard-header__actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-primary-action {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+            color: #fff;
+        }
+
+        /* Statistics Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card__background {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 8rem;
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .stat-card__content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .stat-card__icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .stat-card--primary .stat-card__icon {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .stat-card--success .stat-card__icon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .stat-card--warning .stat-card__icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .stat-card__info {
+            flex: 1;
+        }
+
+        .stat-card__label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card__value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.2;
+            color: #1e293b;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card__number {
+            font-size: 2rem;
+        }
+
+        .stat-card--primary .stat-card__number {
+            color: #3b82f6;
+        }
+
+        .stat-card--success .stat-card__number {
+            color: #10b981;
+        }
+
+        .stat-card--warning .stat-card__number {
+            color: #f59e0b;
+        }
+
+        .stat-card__suffix {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .dashboard-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card__header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .dashboard-card__title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dashboard-card__title i {
+            font-size: 1.25rem;
+            color: #3b82f6;
+        }
+
+        .dashboard-card__title h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .btn-toggle {
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-toggle:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .activity-badge {
+            background: #3b82f6;
+            color: #fff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .dashboard-card__body {
+            padding: 1.5rem;
+        }
+
+        /* Shortcuts Grid */
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .shortcut-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.5rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #1e293b;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+
+        .shortcut-item:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            color: #1e293b;
+        }
+
+        .shortcut-item__icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .shortcut-item__icon--purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .shortcut-item__icon--blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .shortcut-item__icon--green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .shortcut-item__icon--orange {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .shortcut-item__label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .activity-item:hover {
+            padding-left: 0.5rem;
+        }
+
+        .activity-item__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            background: #f1f5f9;
+        }
+
+        .activity-item__icon--success {
+            color: #10b981;
+            background: #d1fae5;
+        }
+
+        .activity-item__icon--warning {
+            color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .activity-item__icon--info {
+            color: #3b82f6;
+            background: #dbeafe;
+        }
+
+        .activity-item__content {
+            flex: 1;
+        }
+
+        .activity-item__title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-item__details {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .activity-item__time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .empty-state__icon {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state__title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state__text {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #3b82f6;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #2563eb;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 992px) {
+            .customer-dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .dashboard-content {
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .dashboard-title {
+                font-size: 1.5rem;
+            }
+
+            .shortcuts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function toggleShortcuts() {
+            const container = document.getElementById('shortcutsContainer');
+            if (container) {
+                container.style.display = container.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    </script>
+}

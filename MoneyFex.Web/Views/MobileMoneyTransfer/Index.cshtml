@@ -1,0 +1,419 @@
+@model MoneyFex.Web.ViewModels.MobileMoneyTransferViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using MoneyFex.Core.Entities.Enums
+@using System.Linq
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Mobile Money Transfer";
+
+    var countries = ViewBag.Countries as List<SelectListItem> ?? new();
+    var wallets = ViewBag.Wallets as List<SelectListItem> ?? new();
+    var recentNumbers = ViewBag.RecentlyPaidNumbers as List<SelectListItem> ?? new();
+    var idCardTypes = ViewBag.IdCardTypes as IEnumerable<SelectListItem>;
+}
+
+@using (Html.BeginForm("Index", "MobileMoneyTransfer", FormMethod.Post, new { id = "mobileTransferForm", autocomplete = "off" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.CountryPhoneCode)
+    @Html.HiddenFor(m => m.SendingAmount)
+    @Html.HiddenFor(m => m.ReceivingAmount)
+    @Html.HiddenFor(m => m.SendingCurrency)
+    @Html.HiddenFor(m => m.ReceivingCurrency)
+    @Html.HiddenFor(m => m.SendingCountry)
+    @Html.HiddenFor(m => m.ReceivingCountry)
+
+    <div class="real_form pattern2 pdt40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="flag-icon flag-icon-@ViewBag.ReceivingCountry"></i> @ViewBag.ReceivingCountryCurrency @ViewBag.TransferMethod</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-money"></i> Amount @ViewBag.SendingCountryCurrency @ViewBag.SendingAmount </span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon">
+                                            <i class="fa fa-user"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="login_signup mb50 clearfix text-center">
+                        <h3>Send Money to a Mobile</h3>
+                        <hr />
+                        @if (ViewData.ModelState["InvalidReceiver"] != null && ViewData.ModelState["InvalidReceiver"].Errors.Count > 0)
+                        {
+                            <h5 class="text-danger">@ViewData.ModelState["InvalidReceiver"].Errors[0].ErrorMessage</h5>
+                        }
+                        @{
+                            var generalErrors = ViewData.ModelState
+                                .Where(x => string.IsNullOrEmpty(x.Key) && x.Value.Errors.Count > 0)
+                                .SelectMany(x => x.Value.Errors);
+                        }
+                        @if (generalErrors.Any())
+                        {
+                            @foreach (var error in generalErrors)
+                            {
+                                <h5 class="text-danger">@error.ErrorMessage</h5>
+                            }
+                        }
+
+                        <div class="form-group mb30" id="Country">
+                            @Html.DropDownListFor(model => model.CountryCode, countries, "Select Country", new { @class = "form-blue contact-no-lg", onchange = "GetDetails()", id = "CountryCode" })
+                            @Html.ValidationMessageFor(model => model.CountryCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb30">
+                            @Html.DropDownListFor(model => model.WalletId, wallets, "Select Mobile Money", new { @class = "form-blue contact-no-lg", onchange = "GetDetails()", id = "WalletId" })
+                            @Html.ValidationMessageFor(model => model.WalletId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb20">
+                            @Html.DropDownListFor(model => model.RecentlyPaidMobile, recentNumbers, "Select Recently  Paid Mobile Number", new { @class = "form-blue", @onchange = "GetRecentlyPaidMobile()", id = "RecentlyPaidMobile" })
+                            @Html.ValidationMessageFor(model => model.RecentlyPaidMobile, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group contact-no-group">
+                            <div class="countr-code-lg">
+                                <span id="countryPhoneCode">@Model.CountryPhoneCode</span>
+                            </div>
+                            @Html.TextBoxFor(x => x.MobileNumber, new { @class = "form-blue contact-no-lg", @placeholder = "Enter Mobile Number", @type = "number" })
+                            @Html.ValidationMessageFor(model => model.MobileNumber, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb30">
+                            @Html.TextBoxFor(model => model.ReceiverName, new { @class = "form-blue", @placeholder = "Receiver name", name = "ReceiverName" })
+                            @Html.ValidationMessageFor(model => model.ReceiverName, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb30" id="emailDiv">
+                            @Html.TextBoxFor(model => model.ReceiverEmail, new { @class = "form-blue", @placeholder = "Enter Email", name = "ReceiverEmail" })
+                            @Html.ValidationMessageFor(model => model.ReceiverEmail, "", new { @class = "text-danger" })
+                        </div>
+
+                        @if (Model.CountryCode == "KE")
+                        {
+                            <div class="form-group mb30">
+                                @Html.TextBoxFor(x => x.ReceiverStreet, new { @class = "form-blue", @placeholder = "Enter Address" })
+                                @Html.ValidationMessageFor(model => model.ReceiverStreet, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group mb20">
+                                @if (idCardTypes != null && idCardTypes.Any())
+                                {
+                                    @Html.DropDownListFor(model => model.IdentityCardId, idCardTypes, "Select Id Card", new { @class = "form-blue", @id = "IdentityCardId" })
+                                }
+                                else
+                                {
+                                    <select name="IdentityCardId" id="IdentityCardId" class="form-blue">
+                                        <option value="">Select Id Card</option>
+                                        <option value="1">National ID</option>
+                                        <option value="2">Passport</option>
+                                        <option value="3">Driving License</option>
+                                    </select>
+                                }
+                                @Html.ValidationMessageFor(model => model.IdentityCardId, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group mb20">
+                                @Html.TextBoxFor(x => x.IdentityCardNumber, new { @class = "form-blue", @placeholder = "Enter IdCard number" })
+                                @Html.ValidationMessageFor(model => model.IdentityCardNumber, "", new { @class = "text-danger" })
+                            </div>
+                        }
+
+                        <div class="form-group mb30">
+                            @Html.DropDownListFor(
+                                model => model.ReasonForTransfer,
+                                Html.GetEnumSelectList<ReasonForTransfer>(),
+                                "Select Reason",
+                                new { @class = "form-blue", @placeholder = "Select  Reason" })
+                            @Html.ValidationMessageFor(model => model.ReasonForTransfer, "", new { @class = "text-danger" })
+                        </div>
+                        @if (ViewData.ModelState["ServiceNotAvialable"] != null && ViewData.ModelState["ServiceNotAvialable"].Errors.Count > 0)
+                        {
+                            <div class="text-danger">@ViewData.ModelState["ServiceNotAvialable"].Errors[0].ErrorMessage</div>
+                        }
+                        @if (ViewData.ModelState["InvalidNumber"] != null && ViewData.ModelState["InvalidNumber"].Errors.Count > 0)
+                        {
+                            <div class="text-danger">@ViewData.ModelState["InvalidNumber"].Errors[0].ErrorMessage</div>
+                        }
+
+                        <div class="text-center clearfix">
+                            <hr />
+                            <button type="submit" class="btn btn-primary btn-lg mb30">Continue <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                            <div class="clearfix">
+                                <center>
+                                    <a asp-controller="TransferMoneyNow" asp-action="Index"><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back </a>
+                                </center>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+    <style>
+        .real_form.pattern2 {
+            background: #f5f6fb;
+        }
+
+        .legacy-panel,
+        .legacy-form-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+            padding: 30px;
+        }
+
+        .wiz {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .wiz-list {
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .wiz-list .icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 2px solid #01a1e3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #01a1e3;
+        }
+
+        .wiz-list .icon.active,
+        .wiz-list .icon.current {
+            background: #01a1e3;
+            color: #fff;
+        }
+
+        .form-blue {
+            width: 100%;
+            border-radius: 28px;
+            border: 1px solid #d5e1f3;
+            padding: 12px 18px;
+            font-size: 16px;
+            color: #1e2b4d;
+        }
+
+        .contact-no-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .countr-code-lg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f5f7fb;
+            border-radius: 28px;
+            padding: 8px 20px;
+            border: 1px solid #d5e1f3;
+            font-weight: 600;
+            min-width: 78px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 2;
+            color: #1e2b4d;
+        }
+
+        .contact-no-lg {
+            border-radius: 28px;
+            padding-left: 110px !important;
+            width: 100%;
+        }
+
+        .legacy-form-card h3 {
+            font-weight: 600;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript">
+        function GetRecentlyPaidMobile() {
+            var mobileNumber = $("#RecentlyPaidMobile").val();
+            if (!mobileNumber) {
+                return;
+            }
+
+            // Fallback data from option text (e.g., "Name - 123456")
+            var optionText = $("#RecentlyPaidMobile option:selected").text();
+            var fallbackName = optionText.indexOf("-") > -1 ? optionText.split("-")[0].trim() : "";
+
+            $.getJSON("@Url.Action("GetRecentlyPaidNumberInfo", "MobileMoneyTransfer")?mobileNumber=" + encodeURIComponent(mobileNumber), function (result) {
+                var data = result || {};
+
+                $("#MobileNumber").val(data.mobileNumber || mobileNumber);
+
+                if (data.receiverName || fallbackName) {
+                    $("#ReceiverName").val(data.receiverName || fallbackName);
+                }
+
+                if (data.countryCode) {
+                    $("#CountryCode").val(data.countryCode);
+                    GetCountryPhoneCode();
+                }
+
+                if (data.walletId) {
+                    $("#WalletId").val(data.walletId);
+                }
+
+                // Update dependent UI (email div visibility etc.)
+                checkifFlutterWaveApi();
+
+                // Move focus to next field for faster editing
+                $("#ReceiverName").focus();
+            });
+        }
+
+        function GetDetails() {
+            var countryCode = $("#CountryCode").val() || "";
+            var walletId = $("#WalletId").val() || "";
+
+            // Build query parameters
+            var queryParams = [];
+            
+            if (countryCode) {
+                queryParams.push("CountryCode=" + encodeURIComponent(countryCode));
+            }
+            if (walletId) {
+                queryParams.push("WalletId=" + encodeURIComponent(walletId));
+            }
+
+            // Preserve all hidden form fields
+            var hiddenFields = ["SendingAmount", "ReceivingAmount", "SendingCurrency", "ReceivingCurrency", "SendingCountry", "ReceivingCountry"];
+            hiddenFields.forEach(function (field) {
+                var value = $("#" + field).val();
+                if (value) {
+                    queryParams.push(field + "=" + encodeURIComponent(value));
+                }
+            });
+
+            // Redirect with all parameters
+            var redirectUrl = "@Url.Action("Index", "MobileMoneyTransfer")";
+            if (queryParams.length > 0) {
+                redirectUrl += "?" + queryParams.join("&");
+            }
+
+            window.location.href = redirectUrl;
+        }
+        function GetCountryPhoneCode() {
+            var countryCode = $("#CountryCode").val();
+            $.getJSON("@Url.Action("GetCountryPhoneCode", "MobileMoneyTransfer")?countryCode=" + countryCode, function (result) {
+                if (result && result.countryPhoneCode) {
+                    $("#CountryPhoneCode").val(result.countryPhoneCode);
+                    $("#countryPhoneCode").text(result.countryPhoneCode);
+                }
+            })
+        }
+
+        checkifFlutterWaveApi();
+        function checkifFlutterWaveApi() {
+            var countryCode = $("#CountryCode").val();
+            var walletId = $("#WalletId").val();
+            $.getJSON("@Url.Action("CheckifFlutterWaveApi", "MobileMoneyTransfer")?CountryCode=" + countryCode + "&walletId=" + walletId, function (result) {
+                if (result == true) {
+                    $("#emailDiv").show();
+                }
+                else {
+                    $("#emailDiv").hide();
+                }
+            })
+        }
+        
+        // Initialize on page load
+        $(document).ready(function () {
+            // Hide country dropdown
+            $("#Country").hide();
+
+            // Form submission handler
+            $("#mobileTransferForm").on("submit", function (e) {
+                // Show loader if it exists
+                if ($("#loader").length) {
+                    $("#loader").show();
+                }
+                // Allow form to submit normally
+                return true;
+            });
+
+            // Initialize phone code and email div on page load
+            if ($("#CountryCode").val()) {
+                GetCountryPhoneCode();
+                checkifFlutterWaveApi();
+            } else {
+                // Hide email div by default
+                $("#emailDiv").hide();
+            }
+
+            // Update phone code when country changes (without page reload)
+            $("#CountryCode").on("change", function () {
+                if ($(this).val()) {
+                    GetCountryPhoneCode();
+                    checkifFlutterWaveApi();
+                }
+            });
+
+            // Update email div when wallet changes
+            $("#WalletId").on("change", function () {
+                checkifFlutterWaveApi();
+            });
+        });
+    </script>
+}
+

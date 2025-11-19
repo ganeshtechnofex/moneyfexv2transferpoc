@@ -1,0 +1,143 @@
+@model MoneyFex.Web.ViewModels.MoneyFexBankDepositViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "MoneyFex Bank Deposit";
+}
+
+@using (Html.BeginForm("MoneyFexBankDeposit", "SenderCashPickUp", FormMethod.Post, new { autocomplete = "off" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.TransactionId)
+
+    <div class="real_form pattern2 pdt40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="flag-icon flag-icon-@ViewBag.ReceivingCountry"></i> @ViewBag.ReceivingCountryCurrency @ViewBag.TransferMethod</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-money"></i> Amount @ViewBag.SendingCountryCurrency @ViewBag.SendingAmount</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-user"></i> @ViewBag.ReceiverName</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="SenderCashPickUp" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="login_signup clearfix text-center">
+                        <h3 class="text-left">Bank Details</h3>
+                        <hr />
+                        <div class="text-left">
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>Amount due</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">@Model.SendingCurrencySymbol@Model.Amount.ToString("N2")</div>
+                                </div>
+                            </div>
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>Account number</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">@Model.AccountNumber</div>
+                                </div>
+                            </div>
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>@Model.LabelName</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">@Model.ShortCode</div>
+                                </div>
+                            </div>
+                            <div class="row summary-row">
+                                <div class="col-xs-6">
+                                    <label>Payment reference</label>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-control form-text">@Model.PaymentReference</div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <p class="text-left">
+                            Have you made payment to our bank account? Once you have transferred the funds using the details above, click the button below so we can monitor your deposit.
+                        </p>
+                    </div>
+                    <div class="text-center clearfix">
+                        <hr />
+                        <button type="submit" class="btn btn-primary btn-lg mb30">Send Confirmation</button>
+                        <div class="clearfix mb20"></div>
+                        <a asp-action="InternationalPayNow" asp-route-transactionId="@Model.TransactionId"><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+    <style>
+        .summary-row {
+            margin-bottom: 15px;
+        }
+
+        .form-text {
+            background: #f5f6fb;
+            border: 1px solid #d5e1f3;
+        }
+    </style>
+}
+

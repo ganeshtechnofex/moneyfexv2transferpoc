@@ -1,0 +1,556 @@
+/* MoneyFex Home Page Styles - Optimized */
+
+.mf-home-page {
+    background-color: #fff;
+}
+
+.mf-home-page h1 {
+    font-size: 5.4em;
+    line-height: 1.2;
+    color: #02b6ff;
+    font-weight: 600;
+}
+
+@media only screen and (max-width: 768px) {
+    .mf-home-page h1 {
+        font-size: 32px;
+    }
+}
+
+/* Exchange Rate Wrapper */
+.exchange-rate-wraper-new {
+    background: #02b6ff;
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    clear: both;
+}
+
+.exchange-rate-wraper-new h2 {
+    font-size: 24px;
+    color: #fff;
+    margin: 5px 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.exchange-rate-wraper-new h2 a {
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+    background: rgb(6, 135, 187);
+    border-radius: 50%;
+    font-weight: 300;
+    display: inline-block;
+    border: solid 1px #026396;
+    margin-left: 8px;
+    line-height: 17px;
+    margin-top: 6px;
+    text-decoration: none;
+}
+
+.exchange-rate-wraper-new p {
+    color: #fff;
+    font-weight: 400;
+    margin: 5px 0;
+}
+
+/* Money Transfer Calculator Form */
+.mf-form-calculator {
+    display: block;
+    border-radius: 4px;
+    background-color: #fff;
+    border: solid 1px #ccc;
+    width: 100%;
+    position: relative;
+    height: 70px;
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
+span.mf-calculator-label {
+    display: inline-block;
+    padding: 0 20px;
+    width: calc(100% - 110px);
+    float: left;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 20px;
+    margin-bottom: 5px;
+    color: #004468;
+}
+
+.mf-form-calculator input {
+    width: calc(100% - 110px);
+    border-radius: 4px;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+    border: none;
+    margin: 0;
+    outline: none;
+    padding: 0 0 0 20px;
+    height: 25px;
+    float: left;
+    font-size: 24px;
+    color: #004468;
+}
+
+.mf-form-calculator input::placeholder {
+    color: #02b6ff;
+}
+
+.mf-currency {
+    width: 110px;
+    padding-right: 40px;
+    display: inline-block;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 5px 0;
+    border-left: solid 1px #ccc;
+    vertical-align: middle;
+    line-height: 35px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #004468;
+    position: relative;
+}
+
+.mf-currency span.mf-currency-select {
+    margin-left: 10px;
+}
+
+.select-arrow {
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    transform: rotate(225deg);
+    cursor: pointer;
+    background: linear-gradient(135deg, #b3b3b3 0%, #b3b3b3 50%, transparent 50%, transparent 100%);
+}
+
+.arrow-wrapper {
+    display: block;
+    position: absolute;
+    right: 20px;
+    top: 30%;
+    padding: 10px 17px;
+    background: #fff;
+    z-index: 9;
+}
+
+/* Currency Dropdown */
+.currency-dropdown {
+    position: absolute;
+    top: 100%;
+    left: -1px;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 4px 10px 20px 0 rgba(0,0,0,0.15);
+    width: calc(100% + 2px);
+    padding: 20px 0;
+    z-index: 10;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 0;
+    display: block;
+}
+
+.currency-dropdown.closed {
+    display: none;
+}
+
+.mf-form-calculator .currency-dropdown {
+    top: 61px;
+}
+
+.currency-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.currency-dropdown ul .currency-dropdown_option {
+    padding: 10px 20px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+}
+
+.currency-dropdown ul .currency-dropdown_option:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.currency-dropdown ul .currency-dropdown_option .currency-dropdown_option_flag {
+    display: inline-block;
+    height: 19px;
+    margin-right: 10px;
+    width: 19px;
+    vertical-align: middle;
+    border-radius: 50%;
+    background-size: cover;
+}
+
+.currency-dropdown ul .currency-dropdown_option .currency-dropdown_option_text {
+    font-size: 14px;
+    color: #333;
+    line-height: 16px;
+}
+
+.currency-dropdown.closed {
+    display: none;
+}
+
+.currency-search {
+    border-bottom: solid 1px #eee;
+    padding: 0 20px 8px;
+    margin-top: -6px;
+    position: relative;
+}
+
+input.input-currency-search {
+    width: 100%;
+    font-size: 17px;
+    padding: 8px 8px 8px 35px;
+    border: solid 1px #ddd;
+    border-radius: 4px;
+}
+
+.currency-search .search-input::before {
+    content: "\f002";
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 30px;
+    top: 17px;
+    font-size: 17px;
+    color: #999;
+}
+
+/* Transfer Method Selection */
+.transfer-type {
+    text-align: center;
+    border: solid 1px #ccc;
+    width: 100%;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.transfer-type h4 {
+    display: block !important;
+    width: 100%;
+    margin: 0 0 15px 0;
+    font-size: 16px !important;
+    font-weight: bold;
+    line-height: 22px;
+    text-align: left;
+    color: #004468;
+}
+
+.display-inline {
+    display: inline-flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.radio-box {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    margin-right: 10px;
+    text-align: center;
+    padding: 15px;
+    border: solid 2px #ddd;
+    border-radius: 8px;
+    min-width: 120px;
+    transition: all 0.3s;
+}
+
+.radio-box:hover {
+    border-color: #02b6ff;
+    background-color: #f0f9ff;
+}
+
+.radio-box input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-box input:checked ~ .checkmark {
+    background-color: #02b6ff;
+    border-color: #02b6ff;
+}
+
+.radio-box input:checked ~ h4 {
+    color: #02b6ff;
+}
+
+.radio-box.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.radio-box.disabled:hover {
+    border-color: #ddd;
+    background-color: transparent;
+}
+
+.radio-box img {
+    width: 50px;
+    margin: 0 auto 10px;
+    display: block;
+}
+
+.radio-box h4 {
+    margin-bottom: 15px;
+    color: #003d55;
+    font-size: 16px;
+}
+
+.radio-box.disabled h4 {
+    color: #c4c3c3;
+}
+
+.radio-box.disabled img {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+
+.checkmark {
+    position: absolute;
+    bottom: -11px;
+    left: 40%;
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    border: solid 2px #ddd;
+    background-color: #fff;
+}
+
+.radio-box input:checked ~ .checkmark:after {
+    content: "✓";
+    position: absolute;
+    display: block;
+    color: #fff;
+    font-size: 14px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Transfer Button */
+button.btn-transfer, a.btn-transfer, input.btn-transfer {
+    background: #02b6ff;
+    color: #fff;
+    border: 0;
+    outline: 0;
+    padding: 15px 50px;
+    text-align: center;
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+button.btn-transfer:hover, button.btn-transfer:focus,
+a.btn-transfer:hover, a.btn-transfer:focus,
+input.btn-transfer:hover, input.btn-transfer:focus {
+    background: #003d55;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Services Section */
+.home-service-design {
+    margin-top: 40px;
+}
+
+.dashboard_thumb {
+    text-align: center;
+    padding: 20px;
+    border: solid 1px #ddd;
+    border-radius: 8px;
+    transition: all 0.3s;
+    height: 100%;
+}
+
+.dashboard_thumb:hover {
+    border-color: #02b6ff;
+    box-shadow: 0 4px 12px rgba(2, 182, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.dashboard_thumb a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.das-icon {
+    margin-bottom: 15px;
+}
+
+.das-icon img {
+    width: 60px;
+    height: 60px;
+}
+
+.dashboard_thumb h3 {
+    color: #003d55;
+    font-size: 18px;
+    margin: 0;
+}
+
+/* Responsive */
+@media only screen and (max-width: 768px) {
+    .mf-home-page h1 {
+        font-size: 32px;
+    }
+    
+    .display-inline {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .radio-box {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .transfer-type h4 {
+        font-size: 15px !important;
+        margin-bottom: 8px;
+    }
+    
+    .radio-box img {
+        width: 30px;
+        margin-bottom: 4px;
+    }
+    
+    label.radio-box h4 {
+        font-size: 15px !important;
+    }
+}
+
+/* Text Primary */
+.text-primary {
+    color: #02b6ff !important;
+}
+
+.text-secondary {
+    color: #003d55 !important;
+}
+
+/* Section Spacing */
+.section-space20 {
+    padding: 20px 0;
+}
+
+.section-space40 {
+    padding: 40px 0;
+}
+
+.section-space60 {
+    padding: 60px 0;
+}
+
+.section-space80 {
+    padding: 80px 0;
+}
+
+.bg-white {
+    background-color: #fff;
+}
+
+/* Main Header */
+.main-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.main-header h1 {
+    font-size: 36px;
+    color: #003d55;
+    margin-bottom: 10px;
+}
+
+.main-header span {
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #02b6ff;
+    margin: 0 auto;
+}
+
+/* Welcome Text */
+.welcome-text-home {
+    text-align: center;
+}
+
+.text-large {
+    font-size: 50px;
+    color: #02b6ff;
+    font-weight: 600;
+}
+
+/* Testimonials */
+.testimonialhome {
+    margin-top: 30px;
+}
+
+.testimonial {
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin: 10px;
+}
+
+.testimonial-content p {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.testimonials-author h4 {
+    color: #003d55;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Form Home */
+.form-home {
+    margin-bottom: 25px;
+    clear: both;
+}
+
+.error-alert {
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Validation Messages */
+#validationMsg, #ValidationResult {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+#ValidationResultdiv {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    border: solid 1px #dc3545;
+}
+

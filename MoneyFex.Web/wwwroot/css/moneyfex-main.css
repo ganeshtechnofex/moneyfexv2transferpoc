@@ -1,0 +1,417 @@
+/* MoneyFex Main Styles - Optimized from Legacy */
+
+@charset "utf-8";
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap');
+
+/* Base Styles */
+body {
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    font-weight: 400;
+    color: #778191;
+    background-color: #f4f6f8;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0px 0px 10px 0px;
+    color: #003d55;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+}
+
+h1 {
+    font-size: 32px;
+    line-height: 44px;
+}
+
+h2 {
+    font-size: 24px;
+    line-height: 32px;
+}
+
+h3 {
+    font-size: 20px;
+}
+
+h4 {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+p {
+    margin: 0 0 26px;
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+a {
+    color: #02b6ff;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+a:focus, a:hover {
+    text-decoration: none;
+    color: #003d55;
+}
+
+strong {
+    font-weight: 600;
+}
+
+/* Text Colors */
+.text-primary {
+    color: #02b6ff !important;
+}
+
+.text-secondary {
+    color: #003d55 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Header Styles */
+.header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo img {
+    max-height: 50px;
+}
+
+#navigation ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+#navigation ul li {
+    position: relative;
+}
+
+#navigation ul li a {
+    color: #003d55;
+    font-weight: 500;
+    padding: 10px 0;
+    display: block;
+}
+
+#navigation ul li a:hover {
+    color: #02b6ff;
+}
+
+#navigation ul li ul {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    min-width: 200px;
+    padding: 10px 0;
+    display: none;
+    flex-direction: column;
+    gap: 0;
+}
+
+#navigation ul li:hover ul {
+    display: flex;
+}
+
+#navigation ul li ul li {
+    width: 100%;
+}
+
+#navigation ul li ul li a {
+    padding: 10px 20px;
+}
+
+/* Footer Styles */
+#footer {
+    background-color: #02b6ff;
+    color: #fff;
+    margin-top: 60px;
+    clear: both;
+    position: relative;
+    width: 100%;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.footer {
+    padding: 60px 0 40px;
+    background-color: #02b6ff;
+}
+
+.widget-footer h4 {
+    color: #fff;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.widget-footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.widget-footer ul li {
+    margin-bottom: 10px;
+}
+
+.widget-footer ul li a {
+    color: #fff;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.widget-footer ul li a:hover {
+    opacity: 1;
+    color: #02b6ff;
+}
+
+.middle-footer {
+    background-color: #02b6ff;
+    padding: 20px 0;
+    text-align: center;
+    border-top: 2px solid #14aeec;
+}
+
+.middle-footer p {
+    color: #fff;
+    opacity: 0.8;
+    margin: 0;
+    font-size: 14px;
+}
+
+.tiny-footer {
+    background-color: #02b6ff;
+    padding: 15px 0;
+    border-top: 2px solid #14aeec;
+    border-bottom: 5px solid #014667;
+    position: relative;
+}
+
+.tiny-footer p {
+    color: #fff;
+    opacity: 0.8;
+    margin: 0;
+    font-size: 14px;
+}
+
+.tiny-footer a {
+    color: #fff;
+    margin: 0 10px;
+    font-size: 18px;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.tiny-footer a:hover {
+    opacity: 1;
+    color: #02b6ff;
+}
+
+.report-fraud-footer {
+    background-color: #014667;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 15px 0;
+}
+
+.report-fraud-footer a {
+    color: #fff;
+    opacity: 0.9;
+    text-decoration: none;
+    transition: opacity 0.3s;
+    font-size: 14px;
+}
+
+.report-fraud-footer a:hover {
+    opacity: 1;
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* Utility Classes */
+.mb10 { margin-bottom: 10px !important; }
+.mb20 { margin-bottom: 20px !important; }
+.mb30 { margin-bottom: 30px !important; }
+.mb40 { margin-bottom: 40px !important; }
+
+.mt10 { margin-top: 10px !important; }
+.mt20 { margin-top: 20px !important; }
+.mt30 { margin-top: 30px !important; }
+.mt40 { margin-top: 40px !important; }
+
+.text-center { text-align: center !important; }
+.text-left { text-align: left !important; }
+.text-right { text-align: right !important; }
+
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Responsive */
+@media only screen and (max-width: 768px) {
+    #navigation ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .footer {
+        padding: 40px 0 20px;
+    }
+    
+    .widget-footer {
+        margin-bottom: 30px;
+    }
+}
+
+/* Button Styles */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: #02b6ff;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #003d55;
+    color: #fff;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    color: #fff;
+}
+
+.btn-sm {
+    padding: 5px 15px;
+    font-size: 14px;
+}
+
+/* After Login Menu */
+.after-login-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.after-login-menu .nav-item {
+    position: relative;
+}
+
+.user_image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #02b6ff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    margin-right: 10px;
+}
+
+.after-login-menu .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    min-width: 200px;
+    padding: 10px 0;
+    list-style: none;
+    margin: 0;
+    display: none;
+}
+
+.after-login-menu .nav-item:hover .dropdown-menu {
+    display: block;
+}
+
+.after-login-menu .dropdown-menu li {
+    width: 100%;
+}
+
+.after-login-menu .dropdown-menu li a {
+    padding: 10px 20px;
+    display: block;
+    color: #003d55;
+}
+
+.after-login-menu .dropdown-menu li a:hover {
+    background-color: #f0f9ff;
+    color: #02b6ff;
+}
+
+/* Header Action */
+.header-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Hidden Classes */
+.hidden-xs { }
+.hidden-sm { }
+.hidden-md { }
+.hidden-lg { }
+
+@media (max-width: 575px) {
+    .hidden-xs { display: none !important; }
+}
+
+@media (max-width: 767px) {
+    .hidden-sm { display: none !important; }
+}
+
+@media (max-width: 991px) {
+    .hidden-md { display: none !important; }
+}
+
+@media (max-width: 1199px) {
+    .hidden-lg { display: none !important; }
+}
+

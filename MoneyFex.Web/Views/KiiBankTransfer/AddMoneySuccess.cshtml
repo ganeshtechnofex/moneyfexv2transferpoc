@@ -1,0 +1,37 @@
+@model MoneyFex.Web.ViewModels.SenderAddMoneySuccessViewModel
+@{
+    ViewData["Title"] = "Payment Success";
+    Layout = "_Layout";
+}
+
+<div class="real_form pattern2 pdt40">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3 col-md-6 col-md-offset-3">
+                <div class="login_signup mb50 clearfix text-center">
+                    <i class="fa fa-check-circle fa-xlg text-primary mb30"></i>
+                    <h2 class="">You've sent <span class="text-primary">@Model.Currency@Model.Amount</span> to @Model.ReceiverName</h2>
+                    
+                    @if (!string.IsNullOrEmpty(ViewBag.TrackingNo))
+                    {
+                        <p class="mt20 text-muted">Receipt number: <strong>@ViewBag.TrackingNo</strong></p>
+                    }
+                </div>
+                <div class="clearfix"></div>
+                
+                <div class="text-center clearfix">
+                    <hr>
+                    <a href="@Url.Action("Index","TransferMoneyNow")" class="btn btn-primary btn-lg mb30">Send More Money</a>
+                    <!-- back btn -->
+                    <div class="clearfix">
+                        <center>
+                            <a href="@Url.Action("Index","Home")" class=""><i class="fa fa-chevron-left" aria-hidden="true"></i> Go to Dashboard</a>
+                        </center>
+                    </div>
+                    <!-- back btn end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

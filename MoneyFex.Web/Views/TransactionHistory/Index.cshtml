@@ -1,0 +1,1278 @@
+@model MoneyFex.Web.ViewModels.TransactionHistoryViewModel
+@{
+    ViewData["Title"] = "Recent Transactions";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    
+    int TotalPageCount = ViewBag.NumberOfPage ?? 0;
+    int CurrentpageCount = Model.SearchParamVm.CurrentpageCount;
+    int TransferMethod = ViewBag.TransferMethod ?? 0;
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<style>
+    .pcoded-content {
+        padding: 0;
+    }
+    .card {
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    .card-header {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .card-body {
+        padding: 20px;
+    }
+    .form-control-round {
+        border-radius: 20px;
+    }
+    .form-control-bold {
+        font-weight: 500;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .no-sor {
+        user-select: none;
+    }
+    .check_boxa {
+        margin-right: 5px;
+    }
+    .btn-round {
+        border-radius: 20px;
+    }
+    .m-t-20 {
+        margin-top: 20px;
+    }
+    .m-b-20 {
+        margin-bottom: 20px;
+    }
+    .f-right {
+        float: right;
+    }
+    .f-left {
+        float: left;
+    }
+    .pull-left {
+        float: left;
+    }
+    .pull-right {
+        float: right;
+    }
+    .mb20 {
+        margin-bottom: 20px;
+    }
+    #pageCountbtn button {
+        margin: 0 2px;
+        padding: 5px 10px;
+        border: 1px solid #428bca;
+        background-color: #428bca;
+        color: white;
+        cursor: pointer;
+    }
+    #pageCountbtn button:hover {
+        background-color: #357abd;
+    }
+</style>
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="page-body">
+                    <div class="row">
+                        @if (TempData["message"] != null)
+                        {
+                            <div class="col-sm-12">
+                                <div class="alert alert-@(TempData["status"]?.ToString() == "true" ? "success" : "danger")">
+                                    @TempData["message"]
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-header border-bottom">
+                                    <h4 class="f-left m-t-5 m-b-0">Recent Transactions</h4>
+                                    <a class="btn btn-primary f-right btn-round" href="@Url.Action("Index")">
+                                        <i class="fa fa-refresh"></i> Refresh
+                                    </a>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <form asp-action="Index" method="post" id="transactionHistoryForm">
+                                        <input type="hidden" asp-for="SearchParamVm.PageSize" id="CurrentPageSize" value="@(Model.SearchParamVm?.PageSize ?? 10)" />
+                                        <input type="hidden" asp-for="SearchParamVm.PageNum" id="CurrentPageNum" value="@(Model.SearchParamVm?.PageNum ?? 1)" />
+                                        <input type="hidden" asp-for="SearchParamVm.CurrentpageCount" id="CurrentPageCount" value="@(Model.SearchParamVm?.CurrentpageCount ?? 0)" />
+                                        <input type="hidden" asp-for="SearchParamVm.DateRange" id="DateRange" />
+                                        <input type="hidden" asp-for="SearchParamVm.TransactionServiceType" id="TransactionServiceType" />
+                                        <input type="hidden" asp-for="SearchParamVm.TransactionWithAndWithoutFee" id="TransactionWithAndWithoutFee" />
+                                        <input type="hidden" asp-for="SearchParamVm.ResponsiblePerson" id="ResponsiblePerson" />
+                                        <input type="hidden" asp-for="SearchParamVm.SearchByStatus" id="SearchByStatus" />
+                                        
+                                        <div class="row m-t-20 m-b-20">
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select class="form-control form-control-round form-control-bold" id="TransferMethod" name="TransferMethod" onchange="filter();">
+                                                        <option value="0" selected>All</option>
+                                                        <option value="6">Bank Deposit</option>
+                                                        <option value="1">Mobile Wallet</option>
+                                                        <option value="3">KiiBank</option>
+                                                        <option value="5">Cash PickUp</option>
+                                                        <option value="7">Select</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input type="text" name="dates" class="form-control form-control-round form-control-bold" placeholder="From to Date" id="dates" onchange="filter();">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select asp-for="SearchParamVm.SendingCountry" class="form-control form-control-round form-control-bold" id="SendingCountry" onchange="filter();">
+                                                        <option value="">Select Sending Country</option>
+                                                        @foreach (var country in (SelectList)ViewBag.SendingCountries)
+                                                        {
+                                                            <option value="@country.Value">@country.Text</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select asp-for="SearchParamVm.ReceivingCountry" class="form-control form-control-round form-control-bold" id="ReceivingCountry" onchange="filter();">
+                                                        <option value="">Select Receiving Country</option>
+                                                        @foreach (var country in (SelectList)ViewBag.ReceivingCountries)
+                                                        {
+                                                            <option value="@country.Value">@country.Text</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row m-t-20 m-b-20">
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.searchString" class="form-control form-control-round form-control-bold" placeholder="Search By ReceiptNo" id="SearchName" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.SenderName" class="form-control form-control-round form-control-bold" placeholder="Search By Sender Name" id="SenderName" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.ReceiverName" class="form-control form-control-round form-control-bold" placeholder="Search By Receiver Name" id="ReceiverName" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.Status" class="form-control form-control-round form-control-bold" placeholder="Search By Status" id="Status" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.PhoneNumber" class="form-control form-control-round form-control-bold" placeholder="Search By Telephone" id="PhoneNumber" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.PayoutProviderName" class="form-control form-control-round form-control-bold" placeholder="Search By Payout Provider" id="PayoutProviderName" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select class="form-control form-control-round form-control-bold" id="transactionWithAndWithoutFee" name="transactionWithAndWithoutFee" onchange="filter();">
+                                                        <option value="">Select Transaction With and Without Fee</option>
+                                                        <option value="1">Transaction With Fee</option>
+                                                        <option value="0">Transaction Without Fee</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row m-t-20 m-b-20">
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select asp-for="SearchParamVm.SendingCurrency" class="form-control form-control-round form-control-bold" id="SendingCurrency" onchange="filter();">
+                                                        <option value="">Select Sending Currency</option>
+                                                        @foreach (var currency in (SelectList)ViewBag.SendingCurrencies)
+                                                        {
+                                                            <option value="@currency.Value">@currency.Text</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select asp-for="SearchParamVm.ReceivingCurrency" class="form-control form-control-round form-control-bold" id="ReceivingCurrency" onchange="filter();">
+                                                        <option value="">Select Receiving Currency</option>
+                                                        @foreach (var currency in (SelectList)ViewBag.ReceivingCurrencies)
+                                                        {
+                                                            <option value="@currency.Value">@currency.Text</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select class="form-control form-control-round form-control-bold" id="responsiblePerson" name="responsiblePerson" onchange="filter();">
+                                                        <option value="">Select Responsible Person</option>
+                                                        <option value="sender">Sender</option>
+                                                        <option value="agent">Agent</option>
+                                                        <option value="admin">Admin Staff</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <select class="form-control form-control-round form-control-bold" id="searchByStatus" name="searchByStatus" onchange="filter();">
+                                                        <option value="">Select Status</option>
+                                                        <option value="Paid">Paid</option>
+                                                        <option value="Cancelled">Cancelled</option>
+                                                        <option value="Payment Pending">Pending</option>
+                                                        <option value="Refunded">Refund</option>
+                                                        <option value="In Progress (ID Check)">In Progress(ID check)</option>
+                                                        <option value="In Progress ">In Progress(Compliance check)</option>
+                                                        <option value="In Progress">In Progress(API Delay)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.MFCode" class="form-control form-control-round form-control-bold" placeholder="Search By MF Code" id="MFCode" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xl-3 col-md-6">
+                                                <div class="form-group">
+                                                    <input asp-for="SearchParamVm.SenderEmail" class="form-control form-control-round form-control-bold" placeholder="Search By Sender Email" id="SenderEmail" onchange="filter(0, this);" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    
+                                    <!-- Summary Section Above Table -->
+                                    <div class="row m-t-20 m-b-20" style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                                        <div class="col-md-12">
+                                            <div class="form-group" style="margin-bottom: 0;">
+                                                <strong>Total number:</strong> <span id="totalNumberDisplay">@Model.TotalNumberOfTransaction</span> &nbsp;&nbsp;&nbsp;
+                                                <strong>Total Amount:</strong> <span id="totalAmountDisplay">@Model.TotalAmountWithCurrency</span> &nbsp;&nbsp;&nbsp;
+                                                <strong>Fee paid:</strong> <span id="totalFeeDisplay">@Model.TotalFeePaidwithCurrency</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="dt-responsive table-responsive">
+                                        <table id="basic-btn" class="table table-striped table-bordered no-sor">
+                                            <thead>
+                                                <tr>
+                                                    <th align="center" class="no-sor">
+                                                        <input id="checkAll" type="checkbox" class="check_boxa"> All
+                                                    </th>
+                                                    <th>#SN</th>
+                                                    <th>Sending Country<br />Receiving Country</th>
+                                                    <th>Sending Currency<br />Receiving Currency</th>
+                                                    <th>Sender Name<br />Sender Email</th>
+                                                    <th>Telephone No</th>
+                                                    <th>MF Code</th>
+                                                    <th>Payout Provider</th>
+                                                    <th>Recipient<br />Account No</th>
+                                                    <th>Amount<br />Fee</th>
+                                                    <th>Receiving Amount</th>
+                                                    <th>Reference</th>
+                                                    <th>Date<br />Time</th>
+                                                    <th>Note</th>
+                                                    <th>Responsible</th>
+                                                    <th>Payout Type</th>
+                                                    <th>Staff Name</th>
+                                                    <th>Status</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td colspan="20" class="text-center">
+                                                        <i class="fa fa-spinner fa-spin"></i> Loading transactions...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        
+                                        <div>
+                                            <div class="form-group" id="paginationInfo">
+                                                Page @Model.SearchParamVm.PageNum of @TotalPageCount
+                                            </div>
+                                            @if (TotalPageCount != 0)
+                                            {
+                                                <div class="form-group">
+                                                    @{int pagecount = CurrentpageCount;}
+                                                    <button style="color:white; background-color:#428bca; border-color:#428bca;" id="backButton" onclick="ChangeButton(false);">
+                                                        &lt;&lt;
+                                                    </button>
+                                                    <div id="pageCountbtn">
+                                                        @for (int buttonCount = 1; buttonCount <= 10 && (pagecount + buttonCount) <= TotalPageCount; buttonCount++)
+                                                        {
+                                                            <button style="color:white; background-color:#428bca; border-color:#428bca;" onclick="filter(@(pagecount + buttonCount));">
+                                                                @(pagecount + buttonCount)
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                    <span style="display:none" id="pagecount">@(pagecount + 10)</span>
+                                                    @if (TotalPageCount > 10 && TotalPageCount > (pagecount + 10))
+                                                    {
+                                                        <button style="color:white; background-color:#428bca; border-color:#428bca;" id="nextButton" onclick="ChangeButton(true);">
+                                                            &gt;&gt;
+                                                        </button>
+                                                    }
+                                                </div>
+                                            }
+                                            <div class="form-group">
+                                                Display <select onchange="GetDataForPageSizeFilter()" id="PageSize">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="40">40</option>
+                                                    <option value="50">50</option>
+                                                    <option value="100">100</option>
+                                                    <option value="500">500</option>
+                                                    <option value="1000">1000</option>
+                                                    <option value="2000">2000</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="PGTransactionStatus" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Card Payment</h5>
+                <button type="button" class="close" onclick="ReloadPage()" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="PGTransactionResult"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="StatusReport" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Status Report</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    Status: <span id="ReportTrasnactionStatus"></span><br />
+                    Amount: <span id="ReportTransactionAmount"></span><br />
+                    Name: <span id="ReportReceiverName"></span><br />
+                    Account No: <span id="ReportReceiverAccountNo"></span><br />
+                    Payout Provider: <span id="ReportPayoutProvider"></span><br />
+                    MoneyFex Reference: <span id="ReportReceiptNo"></span><br />
+                    Payout Reference: <span id="ReportPayoutReference"></span><br />
+                    Transaction Date: <span id="ReportTransactionDate"></span><br />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="complianceAddNote" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transaction Notes</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <a onclick="AddNewNotePopup();" class="btn btn-primary btn-round m-b-10">Add New Note</a>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="Note">
+                        <thead>
+                            <tr>
+                                <th>Notes</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Staff Name</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="addnewnote" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Note</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date:</th>
+                                <th>Time:</th>
+                                <th>Staff:</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <input type="hidden" id="TransactionId" />
+                                <input type="hidden" id="TransactionMethod" />
+                                <td colspan="3">
+                                    <textarea class="form-control" rows="8" id="TransactionNote" placeholder="Enter note..."></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="saveNote()" class="btn btn-primary btn-round" id="Notebtn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ensure jQuery is loaded first (from layout) -->
+<!-- Load moment.js before daterangepicker -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<!-- Load daterangepicker CSS and JS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<!-- Toastr for notifications -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script type="text/javascript">
+    var CurrentpageCount = @CurrentpageCount;
+    var TransactionList = [];
+    
+    // API endpoint URLs
+    var apiUrls = {
+        getTransactions: '@Url.Action("GetTransactions", "TransactionHistory")',
+        checkPGStatus: '@Url.Action("CheckPGStatus", "TransactionHistory")',
+        getStatusReport: '@Url.Action("GetStatusReport", "TransactionHistory")',
+        manualApprove: '@Url.Action("ManualApproveTransaction", "TransactionHistory")',
+        approveHold: '@Url.Action("ApproveHoldTransaction", "TransactionHistory")',
+        cancelTransaction: '@Url.Action("CancelTransaction", "TransactionHistory")',
+        getTransactionNote: '@Url.Action("GetTransactionNote", "TransactionHistory")',
+        saveNote: '@Url.Action("SaveNote", "TransactionHistory")',
+        exportExcel: '@Url.Action("ExportExcelOfTransactionStatement", "TransactionHistory")'
+    };
+    
+    function ReloadPage() {
+        window.location.reload();
+    }
+    
+    $(document).ready(function() {
+        // Log API URLs for debugging
+        console.log('API URLs initialized:', apiUrls);
+        
+        // Initialize default values
+        var defaultPageSize = @(Model.SearchParamVm?.PageSize ?? 10);
+        var defaultPageNum = @(Model.SearchParamVm?.PageNum ?? 1);
+        var defaultCurrentPageCount = @(Model.SearchParamVm?.CurrentpageCount ?? 0);
+        
+        // Set form values
+        $("#TransferMethod").val('@TransferMethod');
+        $("#PageSize").val(defaultPageSize);
+        $('#CurrentPageSize').val(defaultPageSize);
+        $('#CurrentPageNum').val(defaultPageNum);
+        $('#CurrentPageCount').val(defaultCurrentPageCount);
+        
+        // Set date range if available
+        var dateRange = '@(Model.SearchParamVm?.DateRange ?? "")';
+        if (dateRange) {
+            $('input[name="dates"]').val(dateRange);
+        }
+        
+        // Initialize date range picker (wait for library to load)
+        function initDateRangePicker() {
+            if (typeof $.fn.daterangepicker !== 'undefined' && typeof moment !== 'undefined') {
+                $('input[name="dates"]').daterangepicker({
+                    opens: 'left',
+                    locale: {
+                        format: 'MM/DD/YYYY'
+                    },
+                    autoUpdateInput: false
+                });
+                
+                $('input[name="dates"]').on('apply.daterangepicker', function(ev, picker) {
+                    $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+                    filter();
+                });
+                
+                console.log('DateRangePicker initialized successfully');
+            } else {
+                console.warn('DateRangePicker or moment.js not loaded. Retrying...');
+                // Retry after a short delay
+                setTimeout(initDateRangePicker, 100);
+            }
+        }
+        
+        // Initialize after a short delay to ensure libraries are loaded
+        setTimeout(initDateRangePicker, 50);
+        
+        // Load transactions on page load (with a small delay to ensure DOM is ready)
+        setTimeout(function() {
+            console.log('=== PAGE LOAD: Starting transaction load ===');
+            console.log('API URL:', apiUrls.getTransactions);
+            console.log('API Base URL:', window.location.origin);
+            console.log('Full API URL will be:', window.location.origin + apiUrls.getTransactions);
+            
+            // Ensure we load all transactions when no filters are applied
+            // Reset all filter values to empty to get all transactions
+            $('#TransferMethod').val('0'); // Set dropdown to "All"
+            $('#TransactionServiceType').val('0');
+            $('#SendingCountry').val('');
+            $('#ReceivingCountry').val('');
+            $('#SendingCurrency').val('');
+            $('#ReceivingCurrency').val('');
+            $('#SearchName').val('');
+            $('#SenderName').val('');
+            $('#SenderEmail').val('');
+            $('#ReceiverName').val('');
+            $('#PhoneNumber').val('');
+            $('#Status').val('');
+            $('#MFCode').val('');
+            $('#PayoutProviderName').val('');
+            $('#TransactionWithAndWithoutFee').val('');
+            $('#ResponsiblePerson').val('');
+            $('#SearchByStatus').val('');
+            $('input[name="dates"]').val('');
+            $('#CurrentPageNum').val('1');
+            $('#CurrentPageCount').val('0');
+            
+            console.log('All filters reset. Calling loadTransactions()...');
+            console.log('TransferMethod value:', $('#TransferMethod').val());
+            console.log('TransactionServiceType value:', $('#TransactionServiceType').val());
+            
+            // Now load all transactions - force load without any filters
+            loadTransactions(true);
+        }, 200);
+    });
+    
+    // Load transactions from API
+    function loadTransactions(useCurrentFilters) {
+        console.log('=== loadTransactions called ===');
+        console.log('useCurrentFilters:', useCurrentFilters);
+        console.log('Current TransferMethod:', $('#TransferMethod').val());
+        console.log('Current TransactionServiceType:', $('#TransactionServiceType').val());
+        
+        // Build search parameters - when no filters, use minimal params to get all transactions
+        var searchParams = {
+            PageSize: parseInt($('#PageSize').val()) || 10,
+            PageNum: parseInt($('#CurrentPageNum').val()) || 1,
+            CurrentpageCount: parseInt($('#CurrentPageCount').val()) || 0,
+            TransactionServiceType: 0 // Always default to 0 (All) to show all transactions
+        };
+        
+        // Only add filter parameters if they have values (don't send empty strings)
+        // But if useCurrentFilters is false or undefined, force TransactionServiceType to 0
+        var transactionServiceType = parseInt($('#TransactionServiceType').val()) || 0;
+        var transferMethod = parseInt($('#TransferMethod').val()) || 0;
+        
+        // Use TransferMethod if TransactionServiceType is not set
+        if (transactionServiceType === 0 && transferMethod > 0 && transferMethod !== 7) {
+            transactionServiceType = transferMethod;
+        }
+        
+        if (transactionServiceType > 0 && transactionServiceType !== 7) {
+            searchParams.TransactionServiceType = transactionServiceType;
+        } else {
+            // Ensure it's 0 for "All"
+            searchParams.TransactionServiceType = 0;
+        }
+        
+        var dateRange = $('input[name="dates"]').val();
+        if (dateRange && dateRange.trim() !== '') {
+            searchParams.DateRange = dateRange;
+        }
+        
+        var sendingCountry = $('#SendingCountry').val();
+        if (sendingCountry && sendingCountry.trim() !== '') {
+            searchParams.SendingCountry = sendingCountry;
+        }
+        
+        var receivingCountry = $('#ReceivingCountry').val();
+        if (receivingCountry && receivingCountry.trim() !== '') {
+            searchParams.ReceivingCountry = receivingCountry;
+        }
+        
+        var sendingCurrency = $('#SendingCurrency').val();
+        if (sendingCurrency && sendingCurrency.trim() !== '') {
+            searchParams.SendingCurrency = sendingCurrency;
+        }
+        
+        var receivingCurrency = $('#ReceivingCurrency').val();
+        if (receivingCurrency && receivingCurrency.trim() !== '') {
+            searchParams.ReceivingCurrency = receivingCurrency;
+        }
+        
+        var searchString = $('#SearchName').val();
+        if (searchString) {
+            searchParams.searchString = searchString;
+        }
+        
+        var senderName = $('#SenderName').val();
+        if (senderName) {
+            searchParams.SenderName = senderName;
+        }
+        
+        var senderEmail = $('#SenderEmail').val();
+        if (senderEmail) {
+            searchParams.SenderEmail = senderEmail;
+        }
+        
+        var receiverName = $('#ReceiverName').val();
+        if (receiverName) {
+            searchParams.ReceiverName = receiverName;
+        }
+        
+        var phoneNumber = $('#PhoneNumber').val();
+        if (phoneNumber) {
+            searchParams.PhoneNumber = phoneNumber;
+        }
+        
+        var status = $('#Status').val();
+        if (status) {
+            searchParams.Status = status;
+        }
+        
+        var mfCode = $('#MFCode').val();
+        if (mfCode) {
+            searchParams.MFCode = mfCode;
+        }
+        
+        var payoutProvider = $('#PayoutProviderName').val();
+        if (payoutProvider) {
+            searchParams.PayoutProviderName = payoutProvider;
+        }
+        
+        var transactionWithFee = $('#TransactionWithAndWithoutFee').val();
+        if (transactionWithFee) {
+            searchParams.TransactionWithAndWithoutFee = transactionWithFee;
+        }
+        
+        var responsiblePerson = $('#ResponsiblePerson').val();
+        if (responsiblePerson) {
+            searchParams.ResponsiblePerson = responsiblePerson;
+        }
+        
+        var searchByStatus = $('#SearchByStatus').val();
+        if (searchByStatus) {
+            searchParams.SearchByStatus = searchByStatus;
+        }
+        
+        // If TransactionServiceType is 7 (Select), treat as 0 (All)
+        if (searchParams.TransactionServiceType == 7) {
+            searchParams.TransactionServiceType = 0;
+        }
+        
+        // Build query string - only include non-empty parameters
+        var queryParams = {};
+        // Always include pagination params
+        queryParams.PageSize = searchParams.PageSize || 10;
+        queryParams.PageNum = searchParams.PageNum || 1;
+        queryParams.CurrentpageCount = searchParams.CurrentpageCount || 0;
+        queryParams.TransactionServiceType = searchParams.TransactionServiceType || 0;
+        
+        // Only add filter parameters if they have values
+        if (searchParams.DateRange && searchParams.DateRange.trim() !== '') queryParams.DateRange = searchParams.DateRange;
+        if (searchParams.SendingCountry && searchParams.SendingCountry.trim() !== '') queryParams.SendingCountry = searchParams.SendingCountry;
+        if (searchParams.ReceivingCountry && searchParams.ReceivingCountry.trim() !== '') queryParams.ReceivingCountry = searchParams.ReceivingCountry;
+        if (searchParams.SendingCurrency && searchParams.SendingCurrency.trim() !== '') queryParams.SendingCurrency = searchParams.SendingCurrency;
+        if (searchParams.ReceivingCurrency && searchParams.ReceivingCurrency.trim() !== '') queryParams.ReceivingCurrency = searchParams.ReceivingCurrency;
+        if (searchParams.searchString && searchParams.searchString.trim() !== '') queryParams.searchString = searchParams.searchString;
+        if (searchParams.SenderName && searchParams.SenderName.trim() !== '') queryParams.SenderName = searchParams.SenderName;
+        if (searchParams.SenderEmail && searchParams.SenderEmail.trim() !== '') queryParams.SenderEmail = searchParams.SenderEmail;
+        if (searchParams.ReceiverName && searchParams.ReceiverName.trim() !== '') queryParams.ReceiverName = searchParams.ReceiverName;
+        if (searchParams.PhoneNumber && searchParams.PhoneNumber.trim() !== '') queryParams.PhoneNumber = searchParams.PhoneNumber;
+        if (searchParams.Status && searchParams.Status.trim() !== '') queryParams.Status = searchParams.Status;
+        if (searchParams.MFCode && searchParams.MFCode.trim() !== '') queryParams.MFCode = searchParams.MFCode;
+        if (searchParams.PayoutProviderName && searchParams.PayoutProviderName.trim() !== '') queryParams.PayoutProviderName = searchParams.PayoutProviderName;
+        if (searchParams.TransactionWithAndWithoutFee !== null && searchParams.TransactionWithAndWithoutFee !== undefined && searchParams.TransactionWithAndWithoutFee !== '') {
+            queryParams.TransactionWithAndWithoutFee = searchParams.TransactionWithAndWithoutFee;
+        }
+        if (searchParams.ResponsiblePerson && searchParams.ResponsiblePerson.trim() !== '') queryParams.ResponsiblePerson = searchParams.ResponsiblePerson;
+        if (searchParams.SearchByStatus && searchParams.SearchByStatus.trim() !== '') queryParams.SearchByStatus = searchParams.SearchByStatus;
+        
+        var queryString = $.param(queryParams);
+        var url = apiUrls.getTransactions;
+        if (queryString) {
+            url += '?' + queryString;
+        }
+        
+        console.log('=== API CALL START ===');
+        console.log('Full URL:', url);
+        console.log('Query params:', queryParams);
+        console.log('Query string:', queryString);
+        
+        // Show loading indicator
+        $('tbody').html('<tr><td colspan="20" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading transactions...</td></tr>');
+        
+        // Make the API call
+        console.log('Making AJAX request now...');
+        var ajaxStartTime = new Date().getTime();
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            cache: false,
+            timeout: 30000,
+            beforeSend: function(xhr) {
+                console.log('=== AJAX REQUEST SENT ===');
+                console.log('URL:', url);
+                console.log('Method: GET');
+                console.log('XHR readyState:', xhr.readyState);
+                console.log('Timestamp:', new Date().toISOString());
+            }
+        })
+            .done(function(result) {
+                var ajaxEndTime = new Date().getTime();
+                var ajaxDuration = ajaxEndTime - ajaxStartTime;
+                console.log('=== API RESPONSE RECEIVED ===');
+                console.log('Response time:', ajaxDuration + 'ms');
+                console.log('Full response:', result);
+                console.log('Response status: success');
+                console.log('Response data count:', result.data ? result.data.length : 0);
+                console.log('Total count:', result.totalCount);
+                console.log('Total amount:', result.totalAmount);
+                console.log('Total fee:', result.totalFee);
+                
+                if (result && result.success !== false) {
+                    var transactions = result.data || [];
+                    var totalCount = result.totalCount || 0;
+                    var totalAmount = result.totalAmount || '0';
+                    var totalFee = result.totalFee || '0';
+                    
+                    console.log('Processing transactions:', transactions.length);
+                    
+                    // Update totals
+                    $('#totalNumberDisplay').text(totalCount);
+                    $('#totalAmountDisplay').text(totalAmount);
+                    $('#totalFeeDisplay').text(totalFee);
+                    
+                    // Update pagination
+                    var pageSize = parseInt($('#PageSize').val()) || 10;
+                    var pageNum = parseInt($('#CurrentPageNum').val()) || 1;
+                    var totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+                    $('#paginationInfo').html('Page ' + pageNum + ' of ' + totalPages);
+                    
+                    // Render transactions
+                    console.log('Rendering transactions...');
+                    renderTransactions(transactions, totalCount, totalPages);
+                } else {
+                    var errorMsg = result && result.error ? result.error : 'Unknown error occurred';
+                    console.error('Error loading transactions:', errorMsg);
+                    console.error('Full result:', result);
+                    $('tbody').html('<tr><td colspan="20" class="text-center text-danger">Error loading transactions: ' + errorMsg + '</td></tr>');
+                    
+                    // Reset totals
+                    $('#totalNumberDisplay').text('0');
+                    $('#totalAmountDisplay').text('0');
+                    $('#totalFeeDisplay').text('0');
+                    $('#paginationInfo').html('Page 1 of 0');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('AJAX Request Failed!');
+                console.error('Status:', status);
+                console.error('Error:', error);
+                console.error('Response Status Code:', xhr.status);
+                console.error('Response Text:', xhr.responseText);
+                console.error('Full XHR object:', xhr);
+                
+                var errorMsg = 'Failed to load transactions: ' + error;
+                if (xhr.status === 404) {
+                    errorMsg = 'API endpoint not found. Please check the URL: ' + url;
+                } else if (xhr.status === 500) {
+                    errorMsg = 'Server error occurred. Please check the server logs.';
+                } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                } else if (xhr.responseText) {
+                    try {
+                        var errorObj = JSON.parse(xhr.responseText);
+                        if (errorObj.error) {
+                            errorMsg = errorObj.error;
+                        }
+                    } catch (e) {
+                        errorMsg = 'Error: ' + xhr.responseText.substring(0, 100);
+                    }
+                }
+                
+                $('tbody').html('<tr><td colspan="20" class="text-center text-danger">' + errorMsg + '</td></tr>');
+                
+                // Reset totals
+                $('#totalNumberDisplay').text('0');
+                $('#totalAmountDisplay').text('0');
+                $('#totalFeeDisplay').text('0');
+                $('#paginationInfo').html('Page 1 of 0');
+            });
+    }
+    
+    // Render transactions in the table
+    function renderTransactions(transactions, totalCount, totalPages) {
+        var tbody = $('tbody');
+        tbody.empty();
+        
+        if (transactions.length === 0) {
+            tbody.html('<tr><td colspan="20" class="text-center">No transactions found</td></tr>');
+            return;
+        }
+        
+        var pageNum = parseInt($('#CurrentPageNum').val()) || 1;
+        var pageSize = parseInt($('#PageSize').val()) || 10;
+        var startIndex = (pageNum - 1) * pageSize;
+        
+        // Update pagination buttons if needed
+        if (totalPages !== undefined) {
+            updatePaginationButtons(totalPages);
+        }
+        
+        transactions.forEach(function(item, index) {
+            var rowNum = startIndex + index + 1;
+            
+            // Helper function to safely get values with fallback
+            function safeValue(val, fallback) {
+                return (val !== null && val !== undefined && val !== '') ? val : (fallback || 'N/A');
+            }
+            
+            // Safely extract all values with defaults - using camelCase to match API response
+            var identifier = safeValue(item.identifier, '');
+            var transactionId = safeValue(item.transactionId, 0);
+            var transactionServiceType = safeValue(item.transactionServiceType, 0);
+            var sendingCountry = safeValue(item.sendingCountry, 'N/A');
+            var receivingCountry = safeValue(item.receivingCountry, 'N/A');
+            var sendingCurrency = safeValue(item.sendingCurrency, 'N/A');
+            var receivingCurrency = safeValue(item.receivingCurrency, 'N/A');
+            var senderName = safeValue(item.senderName, 'N/A');
+            var senderEmail = safeValue(item.senderEmail, 'N/A');
+            var senderPhoneNumber = safeValue(item.senderPhoneNumber, 'N/A');
+            var senderMFAccountNo = safeValue(item.senderMFAccountNo, 'N/A');
+            var payoutProviderName = safeValue(item.payoutProviderName, 'N/A');
+            var receiverName = safeValue(item.receiverName, 'N/A');
+            var receivingAccountNo = safeValue(item.receivingAccountNo, 'N/A');
+            var amount = safeValue(item.amount, 'N/A');
+            var fee = safeValue(item.fee, 'N/A');
+            var receivingAmount = (item.receivingAmount !== null && item.receivingAmount !== undefined) 
+                ? parseFloat(item.receivingAmount).toFixed(2) 
+                : '0.00';
+            var dateTime = safeValue(item.dateTime, 'N/A');
+            var transactionTime = safeValue(item.transactionTime, 'N/A');
+            var transactionPerformedBy = safeValue(item.transactionPerformedBy, 'N/A');
+            var payoutType = safeValue(item.payoutType, 'N/A');
+            var updatedByStaffName = safeValue(item.updatedByStaffName, 'N/A');
+            var transactionStatusForAdmin = safeValue(item.transactionStatusForAdmin, 'N/A');
+            var reference = safeValue(item.reference, '');
+            var noteCount = item.noteCount || 0;
+            var isReInitializedTransaction = item.isReInitializedTransaction || false;
+            var reInitializedReceiptNo = safeValue(item.reInitializedReceiptNo, '');
+            var isManualConfimationNeed = item.isManualConfimationNeed || false;
+            var isTransactionCancelAble = item.isTransactionCancelAble || false;
+            var isAwaitForApproval = item.isAwaitForApproval || false;
+            
+            var row = '<tr id="' + identifier + '">' +
+                '<td><input type="checkbox" id="' + transactionId + '/' + transactionServiceType + '" ' +
+                'name="' + transactionId + '/' + transactionServiceType + '" ' +
+                'value="' + transactionId + '/' + transactionServiceType + '" ' +
+                'onchange="AddTransactionList(\'' + transactionId + '\', \'' + transactionServiceType + '\')"></td>' +
+                '<td>' + rowNum + '</td>' +
+                '<td>' + sendingCountry + '<br />' + receivingCountry + '</td>' +
+                '<td>' + sendingCurrency + '<br />' + receivingCurrency + '</td>' +
+                '<td><a href="/Transactions/Details?id=' + transactionId + '">' + senderName + '<br />' + senderEmail + '</a></td>' +
+                '<td>' + senderPhoneNumber + '</td>' +
+                '<td>' + senderMFAccountNo + '</td>' +
+                '<td>' + payoutProviderName + '</td>' +
+                '<td>' + receiverName + '<br />' + receivingAccountNo + '</td>' +
+                '<td>' + amount + '<br />' + fee + '</td>' +
+                '<td>' + receivingCurrency + ' ' + receivingAmount + '</td>' +
+                '<td><a href="/Transactions/Details?id=' + transactionId + '">' + identifier + 
+                (isReInitializedTransaction ? '<br /><span>(' + reInitializedReceiptNo + ')</span>' : '') + '</a></td>' +
+                '<td>' + dateTime + '<br />' + transactionTime + '</td>' +
+                '<td>' + (noteCount > 0 ? 
+                    '<a onclick="ShowPopUp(\'' + transactionId + '\', \'' + transactionServiceType + '\')" class="text-danger"><i class="fa fa-plus"></i> Note</a>' :
+                    '<a onclick="ShowPopUp(\'' + transactionId + '\', \'' + transactionServiceType + '\')" style="color:#007bff"><i class="fa fa-plus"></i> Note</a>') + '</td>' +
+                '<td>' + transactionPerformedBy + '</td>' +
+                '<td>' + payoutType + '</td>' +
+                '<td>' + updatedByStaffName + '</td>' +
+                '<td>' + transactionStatusForAdmin + '</td>' +
+                '<td>' +
+                '<a class="btn btn-primary btn-sm" onclick="CheckPGStatus(\'' + identifier + '\', \'' + transactionServiceType + '\')" style="color:white; margin-bottom:5px;">Check Card Pay\'t</a> ' +
+                '<a class="btn btn-secondary btn-sm" onclick="GetStatusReport(\'' + identifier + '\', \'' + transactionServiceType + '\')" style="color:white; background-color:saddlebrown; margin-bottom:5px;">Check Api Pay\'t</a> ' +
+                (isManualConfimationNeed ? '<a class="btn btn-success btn-sm" onclick="ManualConfirm(\'' + identifier + '\', \'' + transactionServiceType + '\')" style="margin-bottom:5px;">Confirm</a> ' : '') +
+                (isTransactionCancelAble ? '<a class="btn btn-danger btn-sm" onclick="CancelTransaction(\'' + transactionId + '\', \'' + transactionServiceType + '\', \'' + identifier + '\')" style="margin-bottom:5px;">Cancel</a> ' : '') +
+                (isAwaitForApproval ? '<a class="btn btn-dark btn-sm text-white" onclick="ApproveTransaction(\'' + transactionId + '\', \'' + transactionServiceType + '\')" style="margin-bottom:5px;">Approve</a>' : '') +
+                '</td>' +
+                '</tr>';
+            tbody.append(row);
+        });
+    }
+    
+    // Update pagination buttons
+    function updatePaginationButtons(totalPages) {
+        var currentPageCount = parseInt($('#CurrentPageCount').val()) || 0;
+        var pageCountBtn = $('#pageCountbtn');
+        pageCountBtn.empty();
+        
+        if (totalPages > 0) {
+            for (var buttonCount = 1; buttonCount <= 10 && (currentPageCount + buttonCount) <= totalPages; buttonCount++) {
+                var pageNum = currentPageCount + buttonCount;
+                var btn = $('<button></button>')
+                    .attr('style', 'color:white; background-color:#428bca; border-color:#428bca;')
+                    .text(pageNum)
+                    .on('click', function() {
+                        filter($(this).text());
+                    });
+                pageCountBtn.append(btn);
+            }
+            
+            $('#pagecount').text(currentPageCount + 10);
+            
+            // Show/hide back button
+            if (currentPageCount > 0) {
+                $('#backButton').show();
+            } else {
+                $('#backButton').hide();
+            }
+            
+            // Show/hide next button
+            if (totalPages > 10 && totalPages > (currentPageCount + 10)) {
+                $('#nextButton').show();
+            } else {
+                $('#nextButton').hide();
+            }
+        }
+    }
+    
+    function GetDataForPageSizeFilter() {
+        var pageSize = $("#PageSize :selected").val();
+        CurrentpageCount = 0;
+        var page = 1;
+        filter(page);
+    }
+    
+    function filter(page, $this) {
+        if (page == 0 || page == undefined) {
+            page = 1;
+        }
+        if ($this) {
+            if ($($this).val().length == 0) {
+                // If filter is cleared, still load data
+                loadTransactions();
+                return;
+            }
+        }
+        
+        $("#TransactionServiceType").val($("#TransferMethod").val());
+        $("#TransactionWithAndWithoutFee").val($("#transactionWithAndWithoutFee").val());
+        $("#ResponsiblePerson").val($("#responsiblePerson").val());
+        $("#SearchByStatus").val($("#searchByStatus").val());
+        $("#DateRange").val($('input[name="dates"]').val());
+        $('#CurrentPageSize').val($('#PageSize').val());
+        $('#CurrentPageCount').val(CurrentpageCount);
+        $('#CurrentPageNum').val(page);
+        
+        // Load transactions via API instead of form submission
+        loadTransactions();
+    }
+    
+    function ChangeButton(isGoToNextPage) {
+        var TotalNumberOfpage = @(TotalPageCount);
+        var pageCount = $("#pagecount").text();
+        GetPagignationButton(TotalNumberOfpage, pageCount, isGoToNextPage);
+    }
+    
+    function GetPagignationButton(totalPages, currentPageCount, isGoToNextPage) {
+        var newPageCount = parseInt(currentPageCount);
+        if (isGoToNextPage) {
+            newPageCount += 10;
+        } else {
+            newPageCount -= 10;
+        }
+        CurrentpageCount = newPageCount;
+        $('#CurrentPageCount').val(CurrentpageCount);
+        filter(1);
+    }
+    
+    function AddTransactionList(Id, method) {
+        if (event.currentTarget.checked == true) {
+            TransactionList.push({ TransactionId: Id, Method: method });
+        } else {
+            TransactionList = TransactionList.filter(item => !(item.TransactionId == Id && item.Method == method));
+        }
+    }
+    
+    $("#checkAll").click(function () {
+        $('input:checkbox').not(this).prop('checked', this.checked);
+        if (event.currentTarget.checked == true) {
+            TransactionList = [];
+            $("tbody tr").each(function () {
+                var checkbox = $(this).find("td")[0].children[0];
+                if (checkbox && checkbox.checked) {
+                    var model = checkbox.id;
+                    var detail = model.split("/");
+                    TransactionList.push({ TransactionId: detail[0], Method: detail[1] });
+                }
+            });
+        } else {
+            TransactionList = [];
+        }
+    });
+    
+    function SendEmail() {
+        if (TransactionList.length == 0) {
+            return toastr.warning('Select transaction');
+        }
+        var EmailType = $("#EmailType").val();
+        // TODO: Implement email sending
+        toastr.success('Email Sent Successfully');
+    }
+    
+    var transactionId = 0;
+    var transactionMethod = "";
+    
+    function ShowPopUp(Id, method) {
+        transactionId = Id;
+        transactionMethod = method;
+        $("#complianceAddNote tbody").empty();
+        $.getJSON(apiUrls.getTransactionNote + "?TransactionId=" + Id + "&TransactionMethodName=" + encodeURIComponent(method), function (result) {
+            var tr;
+            if (result.result && result.result.length > 0) {
+                for (var i = 0; i < result.result.length; i++) {
+                    tr = $('<tr/>');
+                    tr.append("<td>" + result.result[i].Note + "</td>");
+                    tr.append("<td>" + result.result[i].CreatedDate + "</td>");
+                    tr.append("<td>" + result.result[i].CreatedTime + "</td>");
+                    tr.append("<td>" + result.result[i].CreatedByName + "</td>");
+                    $('#Note tbody').append(tr);
+                }
+            }
+        });
+        $('#complianceAddNote').modal('show');
+    }
+    
+    function AddNewNotePopup() {
+        $("#TransactionId").val(transactionId);
+        $("#TransactionMethod").val(transactionMethod);
+        $('#addnewnote').modal('show');
+    }
+    
+    function saveNote() {
+        $("#Notebtn").prop('disabled', true);
+        var Note = $("#TransactionNote").val();
+        var data = {
+            TransactionId: transactionId,
+            Note: Note,
+            TransactionMethodName: transactionMethod
+        };
+        
+        $.ajax({
+            url: apiUrls.saveNote,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function(result) {
+                $("#Notebtn").prop('disabled', false);
+                $('#addnewnote').modal('hide');
+                $('#complianceAddNote').modal('hide');
+                toastr.success('Note Added');
+                ShowPopUp(transactionId, transactionMethod); // Refresh notes
+            },
+            error: function() {
+                $("#Notebtn").prop('disabled', false);
+                toastr.error('Error saving note');
+            }
+        });
+    }
+    
+        function CheckPGStatus(identifier, transferMethod) {
+            var url = apiUrls.checkPGStatus + "?refno=" + encodeURIComponent(identifier) + "&transferMethod=" + transferMethod;
+            console.log('Checking PG Status:', url);
+            
+            $.getJSON(url, function (result) {
+                console.log('PG Status Result:', result);
+                $("#PGTransactionResult p").remove();
+                if (result.Data) {
+                    var pgTransactionmodel = {
+                        Status: result.Data.Status,
+                        Amount: result.Data.Amount,
+                        Reference: result.Data.Reference,
+                        Date: result.Data.Date
+                    };
+                    for (var item in pgTransactionmodel) {
+                        $("#PGTransactionResult").append('<p><b>' + item + '</b>: ' + pgTransactionmodel[item] + '</p>');
+                    }
+                    $("#PGTransactionStatus").modal('show');
+                } else {
+                    toastr.error('Error checking PG status');
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('PG Status Error:', { xhr: xhr, status: status, error: error });
+                toastr.error('Failed to check PG status: ' + error);
+            });
+        }
+        
+        function GetStatusReport(identifier, transferMethod) {
+            var url = apiUrls.getStatusReport + "?identifier=" + encodeURIComponent(identifier) + "&method=" + transferMethod;
+            console.log('Getting Status Report:', url);
+            
+            $.getJSON(url, function (result) {
+                console.log('Status Report Result:', result);
+                if (result.Data) {
+                    $("#ReportTrasnactionStatus").text(result.Data.Status);
+                    $("#ReportTransactionAmount").text(result.Data.Amount);
+                    $("#ReportReceiverName").text(result.Data.Name);
+                    $("#ReportReceiverAccountNo").text(result.Data.AccountNo);
+                    $("#ReportPayoutProvider").text(result.Data.PayoutProvider);
+                    $("#ReportReceiptNo").text(result.Data.ReceiptNo);
+                    $("#ReportPayoutReference").text(result.Data.PayoutReference);
+                    $("#ReportTransactionDate").text(result.Data.TransactionDate);
+                    $("#StatusReport").modal('show');
+                } else {
+                    toastr.error('Error getting status report');
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('Status Report Error:', { xhr: xhr, status: status, error: error });
+                toastr.error('Failed to get status report: ' + error);
+            });
+        }
+        
+        function ManualConfirm(identifier, transactionServiceType) {
+            if (confirm("Are you sure you want to confirm this transaction?")) {
+                $.getJSON(apiUrls.manualApprove + "?refNo=" + encodeURIComponent(identifier) + "&method=" + transactionServiceType, function (result) {
+                    if (result.Data) {
+                        $("#PGTransactionResult p").remove();
+                        $("#PGTransactionResult").append('<p>' + result.Data + '</p>');
+                        $("#PGTransactionStatus").modal('show');
+                        setTimeout(function() { location.reload(); }, 2000);
+                    } else {
+                        toastr.error('Error confirming transaction');
+                    }
+                }).fail(function() {
+                    toastr.error('Failed to confirm transaction');
+                });
+            }
+        }
+        
+        function ApproveTransaction(Id, method) {
+            if (confirm("Are you sure you want to approve this transaction?")) {
+                $.getJSON(apiUrls.approveHold + "?Id=" + Id + "&method=" + method, function (result) {
+                    if (result.result && result.result.Status == 1) {
+                        toastr.success(result.result.Message || 'Transaction approved successfully');
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        toastr.error(result.result?.Message || 'Error approving transaction');
+                    }
+                }).fail(function() {
+                    toastr.error('Failed to approve transaction');
+                });
+            }
+        }
+        
+        function CancelTransaction(transactioId, transactionServiceType, receiptNo) {
+            if (confirm("Are you sure you want to cancel this transaction?")) {
+                $.getJSON(apiUrls.cancelTransaction + "?transactionId=" + transactioId + "&transactionServiceType=" + transactionServiceType, function (result) {
+                    if (result.Status == 1) {
+                        toastr.success(result.Message || 'Transaction cancelled successfully');
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        toastr.error(result.Message || 'Error cancelling transaction');
+                    }
+                }).fail(function() {
+                    toastr.error('Failed to cancel transaction');
+                });
+            }
+        }
+        
+        function ExportExcelOfTransactionStatement() {
+            var date = $('input[name="dates"]').val();
+            if (date == "" || date == undefined) {
+                return toastr.warning('Select Date Range to Download Excel File');
+            }
+
+            var TransferMethod = $("#TransferMethod").val();
+            var SendingCountry = $("#SendingCountry").val();
+            var ReceivingCountry = $("#ReceivingCountry").val();
+            var searchParam = $("#SearchName").val();
+            var senderName = $("#SenderName").val();
+            var receiverName = $("#ReceiverName").val();
+            var Status = $("#Status").val();
+            var telephone = $("#PhoneNumber").val();
+            var SendingCurrency = $("#SendingCurrency").val();
+            var transactionWithAndWithoutFee = $("#transactionWithAndWithoutFee").val();
+            var ResponsiblePerson = $("#ResponsiblePerson").val();
+            var SearchByStatus = $("#SearchByStatus").val();
+            var MFCode = $("#MFCode").val();
+            var SenderEmail = $("#SenderEmail").val();
+            var PageNum = 1;
+            var PageSize = @(Model.TotalNumberOfTransaction);
+            
+            var url = apiUrls.exportExcel + "?DateRange=" + encodeURIComponent(date) +
+                "&TransferMethod=" + TransferMethod + "&SendingCountry=" + SendingCountry + "&ReceivingCountry=" + ReceivingCountry +
+                "&searchParam=" + encodeURIComponent(searchParam) + "&senderName=" + encodeURIComponent(senderName) + 
+                "&receiverName=" + encodeURIComponent(receiverName) + "&Status=" + encodeURIComponent(Status) +
+                "&telephone=" + encodeURIComponent(telephone) + "&SendingCurrency=" + SendingCurrency + 
+                "&transactionWithAndWithoutFee=" + transactionWithAndWithoutFee +
+                "&ResponsiblePerson=" + ResponsiblePerson + "&SearchByStatus=" + SearchByStatus + "&MFCode=" + MFCode +
+                "&SenderEmail=" + encodeURIComponent(SenderEmail) + "&PageNum=" + PageNum + "&PageSize=" + PageSize;
+            
+            window.location.href = url;
+        }
+    
+    ShowBackButton();
+    function ShowBackButton() {
+        var currentPageCount = @(CurrentpageCount);
+        if (currentPageCount != 0) {
+            $("#backButton").show();
+        } else {
+            $("#backButton").hide();
+        }
+    }
+</script>
+

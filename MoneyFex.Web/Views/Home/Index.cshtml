@@ -1,0 +1,391 @@
+@model MoneyFex.Web.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "MoneyFex - Fast Money Transfer";
+    var SendingCountries = Model.SendingCountries;
+    var ReceivingCountries = Model.ReceivingCountries;
+    string CountryNameWithCur = ViewBag.DefaultReceivingCurrency + " &nbsp;&nbsp; " + 
+        (ReceivingCountries.FirstOrDefault(c => c.CountryCode == ViewBag.DefaultReceivingCountry)?.CountryName ?? "Nigeria");
+}
+
+<!-- Banner Section -->
+<section class="section-space20 bg-white" id="estimate">
+    <div class="mf-home-page">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-5 col-sm-5 col-xs-12 hidden-xs">
+                    <div class="mt20">
+                        <h1 class="text-primary" style="font-size: 100px;">
+                            Fast<br>
+                            Money<br>
+                            Transfer
+                        </h1>
+                        <h2 style="font-size: 24px; color: #003d55; margin-top: 20px;">
+                            Send money instantly and securely, anytime
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-7 col-sm-7 col-xs-12">
+                    <div class="col-lg-12">
+                        <p id="validationMsg" class="text-danger"></p>
+                        
+                        <!-- Exchange Rate Display - Mobile -->
+                        <div class="exchange-rate-wraper-new hidden-lg hidden-md">
+                            <h2 style="font-size:21px">
+                                1&nbsp;<span data-outbound-currency="@ViewBag.DefaultSendingCurrency" name="SendingCurrency">@ViewBag.DefaultSendingCurrency</span>&nbsp;=&nbsp;
+                                <span name="ExchangeRate">0.00</span>&nbsp;
+                                <span class="exchange-rate" data-inbound-currency="@ViewBag.DefaultReceivingCurrency" name="ReceivingCurrency">@ViewBag.DefaultReceivingCurrency</span>
+                                <a id="IsIntroductoryRate" href="javascript:void(0);" data-container="body" data-toggle="popover" data-placement="top" data-title="Rate Details" data-trigger="focus" data-content="The introductory rate is for your first transfer with MoneyFex">
+                                    <i class="fa fa-question"></i>
+                                </a>
+                            </h2>
+                            <p id="IsIntroductoryFee">
+                                Fee: <del><span name="SendingCurrencySymbol">£</span><span name="Fee">0.00</span></del> (No fee for the first transaction)
+                            </p>
+                            <p id="IsNotIntroductoryFee" style="display:none">
+                                Fee: <span name="SendingCurrencySymbol">£</span><span name="Fee">0.00</span>
+                            </p>
+                        </div>
+                        
+                        <!-- Exchange Rate Display - Desktop -->
+                        <div class="exchange-rate-wraper-new hidden-xs hidden-sm">
+                            <h2>
+                                1&nbsp;<span data-outbound-currency="@ViewBag.DefaultSendingCurrency" name="SendingCurrency">@ViewBag.DefaultSendingCurrency</span>&nbsp;=&nbsp;
+                                <span name="ExchangeRate">0.00</span>&nbsp;
+                                <span class="exchange-rate" data-inbound-currency="@ViewBag.DefaultReceivingCurrency" name="ReceivingCurrency">@ViewBag.DefaultReceivingCurrency</span>
+                                <a id="IsIntroductoryRate2" href="javascript:void(0);" data-container="body" data-toggle="popover" data-placement="top" data-title="Rate Details" data-trigger="focus" data-content="The introductory rate is for your first transfer with MoneyFex">
+                                    <i class="fa fa-question"></i>
+                                </a>
+                            </h2>
+                            <p id="IsIntroductoryFee2">
+                                Fee: <del><span name="SendingCurrencySymbol">£</span><span name="Fee">0.00</span></del> (No fee for the first transaction)
+                            </p>
+                            <p id="IsNotIntroductoryFee2" style="display:none">
+                                Fee: <span name="SendingCurrencySymbol">£</span><span name="Fee">0.00</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        <div class="exchange-rate-wraper-new" style="background-color:white;display:none" id="ValidationResultdiv">
+                            <p class="text-danger" id="ValidationResult"></p>
+                        </div>
+                        
+                        <!-- You Send -->
+                        <div class="mf-form-calculator">
+                            <span class="mf-calculator-label">You send</span>
+                            <input type="number" id="SendingAmount" class="primary-placeholder" required placeholder="0.00" name="SendingAmount" onkeyup="GetPaymentSummary(false)" step=".01" min="0">
+                            <div class="mf-currency text-right dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true">
+                                <span class="mf-currency-select" 
+                                      data-currency="@ViewBag.DefaultSendingCurrency" 
+                                      data-country-code="@ViewBag.DefaultSendingCountry"
+                                      id="sendingCountry">
+                                    @ViewBag.DefaultSendingCurrency &nbsp;&nbsp; from @(SendingCountries.FirstOrDefault(c => c.CountryCode == ViewBag.DefaultSendingCountry)?.CountryName ?? "United Kingdom")
+                                </span>
+                                <div class="arrow-wrapper"><span class="select-arrow"></span></div>
+                            </div>
+                            <div class="currency-dropdown dropdown-menu closed" aria-labelledby="dropdown-toggle">
+                                <div class="currency-search">
+                                    <div class="search-input">
+                                        <input type="search" class="input-currency-search" id="searchCurrency" placeholder="Type a currency / country">
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <ul id="currencylist">
+                                    @* Countries will be loaded dynamically from API *@
+                                    @foreach (var item in SendingCountries)
+                                    {
+                                        <li class="currency-dropdown_option" onclick="OnSendingCountryChange('@item.CountryCode', '@item.Currency', '@item.CountryName')">
+                                            <div class="currency-dropdown_option_flag flag-icon flag-icon-@item.CountryCode.ToLower()"></div>
+                                            <span class="currency-dropdown_option_text">@item.Currency &nbsp;&nbsp; from @item.CountryName</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- They Receive -->
+                        <div class="mf-form-calculator">
+                            <span class="mf-calculator-label">They receive</span>
+                            <input type="number" class="primary-placeholder" id="ReceivingAmount" placeholder="0.00" name="ReceivingAmount" onkeyup="GetPaymentSummary(true)" step=".01" min="0">
+                            <div class="mf-currency text-right dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true">
+                                <span class="mf-currency-select" 
+                                      data-currency="@ViewBag.DefaultReceivingCurrency" 
+                                      data-country-code="@ViewBag.DefaultReceivingCountry"
+                                      id="receivingCountry">
+                                    @CountryNameWithCur
+                                </span>
+                                <div class="arrow-wrapper"><span class="select-arrow"></span></div>
+                            </div>
+                            <div class="currency-dropdown dropdown-menu closed" aria-labelledby="dropdown-toggle">
+                                <div class="currency-search">
+                                    <div class="search-input">
+                                        <input type="search" class="input-currency-search" id="searchCurrency1" placeholder="Type a currency / country">
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <ul id="currencylist1">
+                                    @* Countries will be loaded dynamically from API *@
+                                    @foreach (var item in ReceivingCountries)
+                                    {
+                                        <li class="currency-dropdown_option" onclick="OnReceivingCountryChange('@item.CountryCode', '@item.Currency', '@item.CountryName')">
+                                            <div class="currency-dropdown_option_flag flag-icon flag-icon-@item.CountryCode.ToLower()"></div>
+                                            <span class="currency-dropdown_option_text">@item.Currency &nbsp;&nbsp; @item.CountryName</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Method Selection -->
+                    <div class="col-lg-12">
+                        <div class="form-home">
+                            <div class="transfer-type">
+                                <h4 class="text-left">Transfer to a</h4>
+                                <div class="display-inline mb10 mt10" id="transferMethod">
+                                    <label class="radio-box" id="bac">
+                                        <img src="~/images/icons/bank.svg" width="50" alt="Bank Account" style="margin-bottom: 10px;">
+                                        <h4 class="mb15 text-center">Bank Account</h4>
+                                        <input type="radio" name="radio" id="BankAccount" value="4" checked onchange="GetPaymentSummary(false)">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <label class="radio-box" id="wal">
+                                        <img src="~/images/icons/mobile-money.svg" width="50" alt="Mobile Wallet" style="margin-bottom: 10px;">
+                                        <h4 class="mb15 text-center">Mobile Wallet</h4>
+                                        <input type="radio" name="radio" id="MobileWallet" value="3" onchange="GetPaymentSummary(false)">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <label class="radio-box" id="casp">
+                                        <img src="~/images/icons/cash-pickup.svg" width="50" alt="Cash Pickup" style="margin-bottom: 10px;">
+                                        <h4 class="mb15 text-center">Cash Pickup</h4>
+                                        <input type="radio" name="radio" id="CashPickup" value="1" onchange="GetPaymentSummary(false)">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <label class="radio-box" id="kiibank">
+                                        <img src="~/images/icons/kiipay.svg" width="50" alt="KiiBank" style="margin-bottom: 10px;">
+                                        <h4 class="mb15 text-center">KiiBank</h4>
+                                        <input type="radio" name="radio" id="KiiBank" value="2" onchange="GetPaymentSummary(false)">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+                                <div class="error-alert hidden-lg">
+                                    <span class="text-danger text-center" id="transferMethodvalidationMsg"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Button -->
+                    <div class="form-home col-lg-12">
+                        <a onclick="TransferNow()" class="btn-transfer">Transfer</a>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="section-space60">
+    <div class="container">
+        <div class="row">
+            <div class="welcome-text-home text-center">
+                <h1 class="text-primary hidden-lg hidden-md mb40">
+                    Best<br>
+                    Exchange Rates
+                </h1>
+                <div class="main-header text-center">
+                    <h1>Multiple Services</h1>
+                    <span></span>
+                </div>
+                <div class="clearfix mb20"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="mobile_design home-service-design text-center clearfix">
+                <div class="col-lg-8 col-lg-offset-2">
+                    <div class="col-lg-6 col-md-6 col-xs-6 col-sm-6">
+                        <div class="dashboard_thumb">
+                            <a href="@Url.Action("Index", "TransferMoneyNow")">
+                                <div class="das-icon">
+                                    <img src="~/images/icons/bank.svg" alt="Bank Account Deposit" style="width: 60px; height: 60px;">
+                                </div>
+                                <h3>Bank Account Deposit</h3>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-xs-6 col-sm-6">
+                        <div class="dashboard_thumb">
+                            <a href="@Url.Action("Index", "TransferMoneyNow")">
+                                <div class="das-icon">
+                                    <img src="~/images/icons/mobile-money.svg" alt="Mobile Money Transfer" style="width: 60px; height: 60px;">
+                                </div>
+                                <h3>Mobile Money Transfer</h3>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-xs-6 col-sm-6">
+                        <div class="dashboard_thumb">
+                            <a href="@Url.Action("Index", "TransferMoneyNow")">
+                                <div class="das-icon">
+                                    <img src="~/images/icons/cash-pickup.svg" alt="Cash Pickup" style="width: 60px; height: 60px;">
+                                </div>
+                                <h3>Cash Pickup</h3>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-xs-6 col-sm-6">
+                        <div class="dashboard_thumb">
+                            <a href="@Url.Action("Index", "TransferMoneyNow")">
+                                <div class="das-icon">
+                                    <img src="~/images/icons/kiipay.svg" alt="KiiPay Wallet" style="width: 60px; height: 60px;">
+                                </div>
+                                <h3>KiiPay Wallet</h3>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="text-center mt20">
+                <h1 class="text-primary text-large mb10" style="font-size: 50px;">54,000+</h1>
+                <h3 class="mb0">Customers in 36 Months</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.Feedbacks != null && Model.Feedbacks.Any())
+{
+    <section class="section-space40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="main-header text-center">
+                        <h1>From our Customers</h1>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="testimonialhome">
+                        @foreach (var item in Model.Feedbacks)
+                        {
+                            <div class="item">
+                                <div class="testimonial text-left mb10">
+                                    <div class="testimonial-content">
+                                        <p>@item.FeedBack</p>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="testimonials-author text-right">
+                                                <h4 class="text-secondary">
+                                                    @item.CustomerFirstName, @item.CustomerTypeName 
+                                                    <span>(@item.PlatformName, @item.Country)</span>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script src="~/js/moneyfex-home.js" asp-append-version="true"></script>
+    <script src="~/js/legacy-home.js" asp-append-version="true"></script>
+    <script>
+        // Simple approach: Override TransferNow to handle KiiBank redirect
+        // This uses the same simple approach as TransferMoneyNow page
+        (function() {
+            // Wait for moneyfex-home.js to load
+            function setupTransferNow() {
+                if (typeof jQuery === 'undefined' || typeof window.TransferNow === 'undefined') {
+                    setTimeout(setupTransferNow, 50);
+                    return;
+                }
+                
+                var $ = jQuery;
+                var originalTransferNow = window.TransferNow;
+                
+                // Override TransferNow with simple KiiBank redirect
+                window.TransferNow = function() {
+                    // Check if KiiBank is selected (value="2" or id="KiiBank")
+                    var selectedRadio = $('input[name="radio"]:checked');
+                    var transferMethod = selectedRadio.attr('id') || selectedRadio.val();
+                    
+                    // Simple redirect for KiiBank - same as TransferMoneyNow approach
+                    if (transferMethod === 'KiiBank' || selectedRadio.val() === '2') {
+                        var sendingAmount = parseFloat($('#SendingAmount').val()) || 0;
+                        var receivingAmount = parseFloat($('#ReceivingAmount').val()) || 0;
+                        var sendingCurrency = $('#sendingCountry').attr('data-currency') || 'GBP';
+                        var receivingCurrency = $('#receivingCountry').attr('data-currency') || 'NGN';
+                        var sendingCountry = $('#sendingCountry').attr('data-country-code') || 
+                                            (typeof selectedSendingCountry !== 'undefined' ? selectedSendingCountry : 'GB');
+                        var receivingCountry = $('#receivingCountry').attr('data-country-code') || 
+                                              (typeof selectedReceivingCountry !== 'undefined' ? selectedReceivingCountry : 'NG');
+                        
+                        // Build URL with parameters
+                        var kiiBankUrl = '/KiiBankTransfer/AccountDetails?'
+                            + 'SendingAmount=' + encodeURIComponent(sendingAmount)
+                            + '&ReceivingAmount=' + encodeURIComponent(receivingAmount)
+                            + '&SendingCurrency=' + encodeURIComponent(sendingCurrency)
+                            + '&ReceivingCurrency=' + encodeURIComponent(receivingCurrency)
+                            + '&SendingCountry=' + encodeURIComponent(sendingCountry)
+                            + '&ReceivingCountry=' + encodeURIComponent(receivingCountry);
+                        
+                        // Simple redirect
+                        window.location.href = kiiBankUrl;
+                        return false;
+                    }
+                    
+                    // For other methods, use the original function
+                    return originalTransferNow.apply(this, arguments);
+                };
+            }
+            
+            // Setup when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupTransferNow);
+            } else {
+                setupTransferNow();
+            }
+        })();
+        
+        // Wait for jQuery and legacy-home.js to load
+        (function() {
+            function initPage() {
+                if (typeof jQuery !== 'undefined' && typeof GetPaymentSummary === 'function') {
+                    var $ = jQuery;
+                    
+                    // Initialize popovers
+                    $(function () {
+                        $('[data-toggle="popover"]').popover();
+                    });
+                    
+                    // Initial calculation after a short delay to ensure DOM is ready
+                    setTimeout(function() {
+                        if (typeof GetPaymentSummary === 'function') {
+                            GetPaymentSummary(false);
+                        }
+                    }, 200);
+                } else {
+                    // Retry if jQuery or functions not loaded yet
+                    setTimeout(initPage, 50);
+                }
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPage);
+            } else {
+                initPage();
+            }
+        })();
+    </script>
+}

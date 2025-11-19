@@ -1,0 +1,26 @@
+@model MoneyFex.Web.ViewModels.AddMoneyToWalletSuccessViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Transfer complete";
+}
+
+<div class="real_form pattern2 pdt40">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3 col-md-6 col-md-offset-3">
+                <div class="login_signup mb50 clearfix text-center">
+                    <i class="fa fa-check-circle fa-4x text-primary mb30"></i>
+                    <h2>You've sent <span class="text-primary">@Model.Currency@Model.Amount.ToString("N2")</span> to @Model.ReceiverName</h2>
+                    <p class="mt20 text-muted">Receipt number: <strong>@Model.ReceiptNo</strong></p>
+                </div>
+                <div class="text-center clearfix">
+                    <hr />
+                    <a asp-controller="TransferMoneyNow" asp-action="Index" class="btn btn-primary btn-lg mb30">Send More Money</a>
+                    <div class="clearfix mb10"></div>
+                    <a asp-controller="Customer" asp-action="Dashboard"><i class="fa fa-chevron-left" aria-hidden="true"></i> Go to dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

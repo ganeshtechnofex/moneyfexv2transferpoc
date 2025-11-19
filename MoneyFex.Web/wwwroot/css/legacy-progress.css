@@ -1,0 +1,135 @@
+
+/* progress */
+
+
+.transfer-progress {
+    padding: 20px;
+    margin-bottom: 20px;
+    border-bottom: solid 1px #eee;
+}
+.transfer-progress:last-child {
+    border-bottom: 0;
+    margin: 0;
+}
+
+.details-progress h4 b {
+     margin-right: 15px;
+    font-size: 20px;
+       display: flex !important;
+    color: #014667;
+}
+
+.details-progress h4 {
+    display: -webkit-inline-box;
+}
+
+.progress-circle-text-wraper {
+        border: solid 1px #eee;
+        padding: 20px 0;
+        margin-bottom: 50px;
+}
+.progress-circle-text-wraper h4 {
+    margin: 15px 0;
+}
+.progress-circle-text-wraper .progress-circle {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    border: solid 2px #02b6ff;
+    border-radius: 50%;
+    line-height: 60px;
+    text-align: center;
+    font-size: 30px;
+    color: #fff;
+}
+.progress-circle.last {
+    background: #fff;
+}
+.progress-circle.active {
+    background: #02b6ff;
+}
+
+.progress-circle-text-wraper .progress-circle::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    top: 25%;
+    /* right: -79px; */
+    background: #02b6ff;
+    display: inline-block;
+}
+.progress-circle.last:after {
+    content: "";
+    height: 0;
+    display: none;
+}
+
+
+
+@media only screen and (max-width: 768px) {
+    .transfer-progress
+{
+    padding: 0;
+}
+.transfer-progress .btn
+{
+      padding: 8px 15px;
+    font-size: 15px;
+    font-weight: normal;
+    display: block !important;
+    clear: both;
+    margin-top: 10px;
+    width: 100%;
+}
+.progress-circle-text-wraper .progress-circle
+{
+        width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    border: solid 2px #02b6ff;
+    border-radius: 50%;
+    line-height: 40px;
+    text-align: center;
+    font-size: 15px;
+    color: #fff;
+}
+.progress-circle-text-wraper .progress-circle::after {
+    /* content: ""; */
+    /* position: absolute; */
+    /* width: 57%; */
+    /* height: 2px; */
+    /* top: 25%; */
+    /* right: -26px; */
+    /* background: #02b6ff; */
+    /* display: inline-block; */
+}
+.progress-circle-text-wraper h4 {
+    margin: 5px 0;
+    font-size: 10px;
+    font-weight: normal;
+}
+.progress-circle.last:after {
+    content: "";
+    height: 0;
+    display: none;
+}
+.details-progress h4 b
+{
+    font-size: 15px;
+}
+.transfer-progress:last-child
+{
+    margin-bottom: 0;
+}
+
+.transfer-progress .pinside30
+{
+    padding:10px;
+}
+
+.transfer-progress .table-responsive>.table>tbody>tr>td 
+{
+       white-space: normal;
+}
+}

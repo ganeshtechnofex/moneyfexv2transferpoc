@@ -1,0 +1,62 @@
+@model MoneyFex.Web.ViewModels.CustomerLoginViewModel
+@{
+    ViewData["Title"] = "Customer Login";
+}
+
+<div class="auth-simple">
+    <div class="auth-card shadow">
+        <div class="text-center mb-4">
+            <img src="~/images/logo.png" alt="MoneyFex" class="auth-logo mb-3" />
+            <h2 class="fw-semibold">Customer Login</h2>
+            <p class="text-muted mb-0">Enter your MoneyFex credentials</p>
+        </div>
+
+        <form asp-action="Index" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label fw-semibold">Username</label>
+                <input asp-for="Username" class="form-control form-control-lg" autocomplete="username" />
+                <span asp-validation-for="Username" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label fw-semibold">Password</label>
+                <input asp-for="Password" class="form-control form-control-lg" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">Login</button>
+        </form>
+
+        <div class="text-center mt-4">
+            <small class="text-muted">Demo credentials: <strong>customer / customer123</strong></small>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .auth-simple {
+            min-height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

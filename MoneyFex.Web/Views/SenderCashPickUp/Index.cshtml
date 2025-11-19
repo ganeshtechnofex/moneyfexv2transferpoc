@@ -1,0 +1,257 @@
+@model MoneyFex.Web.ViewModels.SenderCashPickUpViewModel
+@using MoneyFex.Core.Entities.Enums
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Cash Pickup";
+    string phoneCode = Model.CountryPhoneCode;
+    decimal val = Math.Round(Model.SendingAmount, 2);
+}
+
+@using (Html.BeginForm("Index", "SenderCashPickUp", FormMethod.Post, new { id = "cashPickupForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="real_form pattern2 pdt40 ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="flag-icon flag-icon-@ViewBag.ReceivingCountry "></i> @ViewBag.ReceivingCountryCurrency @ViewBag.TransferMethod </span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="fa fa-money"></i> Amount @ViewBag.SendingCountryCurrency @ViewBag.SendingAmount </span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon">
+                                            <i class="fa fa-user"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="login_signup mb50 clearfix text-center">
+                        <h3>Cash Pickup</h3>
+                        <hr>
+                        <h5>@Html.ValidationSummary(true, "", new { @class = "text-danger" })</h5>
+                        @Html.HiddenFor(model => model.CountryPhoneCode)
+                        @Html.HiddenFor(model => model.SendingAmount)
+                        @Html.HiddenFor(model => model.ReceivingAmount)
+                        @Html.HiddenFor(model => model.SendingCurrency)
+                        @Html.HiddenFor(model => model.ReceivingCurrency)
+                        @Html.HiddenFor(model => model.SendingCountry)
+                        @Html.HiddenFor(model => model.ReceivingCountry)
+                        @Html.HiddenFor(model => model.SenderId)
+                        @Html.HiddenFor(model => model.CountryCode, new { @id = "CountryCodeHidden" })
+
+                        <div class="form-group mb30">
+                            <label asp-for="RecentReceiverId" class="form-label text-left w-100">Select Recent Receiver</label>
+                            <select asp-for="RecentReceiverId" asp-items="@(ViewBag.RecentReceivers as SelectList)" class="form-control form-blue">
+                                <option value="">Select Recent Receiver</option>
+                            </select>
+                            <span asp-validation-for="RecentReceiverId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb20">
+                            <label asp-for="FullName" class="form-label text-left w-100">Full Name</label>
+                            <input asp-for="FullName" class="form-control form-blue" placeholder="Enter Full Name" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb20" id="Country">
+                            <label asp-for="CountryCode" class="form-label text-left w-100">Select Country</label>
+                            <select asp-for="CountryCode" asp-items="@(ViewBag.Countries as SelectList)" class="form-control form-blue" id="CountryCode">
+                                <option value="">Select Country</option>
+                            </select>
+                            <span asp-validation-for="CountryCode" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group contact-no-group mb20">
+                            <label asp-for="MobileNumber" class="form-label text-left w-100">Mobile Number</label>
+                            <div class="d-flex align-items-center">
+                                <div class="countr-code-lg me-2">
+                                    <span id="Phonecode">@ViewBag.CountryPhoneCode</span>
+                                </div>
+                                <input asp-for="MobileNumber" type="tel" class="form-control form-blue contact-no-lg" placeholder="Enter Mobile Number" />
+                            </div>
+                            <span asp-validation-for="MobileNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb20">
+                            <label asp-for="EmailAddress" class="form-label text-left w-100">Email Address (Optional)</label>
+                            <input asp-for="EmailAddress" type="email" class="form-control form-blue" placeholder="Enter Email Address" />
+                            <span asp-validation-for="EmailAddress" class="text-danger"></span>
+                        </div>
+
+                        @if (Model.CountryCode == "MA")
+                        {
+                            <div class="form-group mb20">
+                                <label asp-for="IdenityCardId" class="form-label text-left w-100">Select Id Card</label>
+                                <select asp-for="IdenityCardId" asp-items="@(ViewBag.IdCardTypes as SelectList)" class="form-control form-blue" id="IdenityCardId">
+                                    <option value="0">Select Id Card</option>
+                                </select>
+                                <span asp-validation-for="IdenityCardId" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb20">
+                                <label asp-for="IdentityCardNumber" class="form-label text-left w-100">Id Card Number</label>
+                                <input asp-for="IdentityCardNumber" class="form-control form-blue" placeholder="Enter IdCard number" />
+                                <span asp-validation-for="IdentityCardNumber" class="text-danger"></span>
+                            </div>
+                        }
+
+                        <div class="form-group mb20">
+                            <label asp-for="Reason" class="form-label text-left w-100">Reason for Transfer</label>
+                            <select asp-for="Reason" asp-items="Html.GetEnumSelectList<ReasonForTransfer>()" class="form-control form-blue">
+                                <option value="">Select Reason for Transfer</option>
+                            </select>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-center clearfix">
+                            <hr>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submit">Continue <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                            <div class="clearfix mb30"></div>
+                            <a asp-controller="TransferMoneyNow" asp-action="Index" class=""><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Form submission handler
+            $("#cashPickupForm").on("submit", function (e) {
+                // Ensure CountryCode is set from dropdown or hidden field
+                var countryCode = $("#CountryCode").val();
+                if (countryCode) {
+                    $("#CountryCodeHidden").val(countryCode);
+                }
+                
+                // Show loader if exists
+                if ($("#loader").length) {
+                    $("#loader").show();
+                }
+            });
+
+            // Get receiver information when recent receiver is selected
+            $("#RecentReceiverId").change(function () {
+                var receiverId = $(this).val();
+                if (receiverId) {
+                    GetReceiverInformation(receiverId);
+                }
+            });
+
+            // Get country phone code when country changes
+            $("#CountryCode").change(function () {
+                var countryCode = $(this).val();
+                if (countryCode) {
+                    // Update hidden field
+                    $("#CountryCodeHidden").val(countryCode);
+                    
+                    GetCountryPhoneCode(countryCode);
+                    
+                    // Show/hide Morocco specific fields
+                    if (countryCode === "MA") {
+                        $("#IdenityCardId").closest(".form-group").show();
+                        $("#IdentityCardNumber").closest(".form-group").show();
+                    } else {
+                        $("#IdenityCardId").closest(".form-group").hide();
+                        $("#IdentityCardNumber").closest(".form-group").hide();
+                    }
+                }
+            });
+
+            // Hide country field initially (country is pre-selected from query params)
+            $("#Country").hide();
+            
+            // Set CountryCode value from model if available
+            var countryCodeValue = "@Model.CountryCode";
+            if (countryCodeValue) {
+                $("#CountryCode").val(countryCodeValue);
+                $("#CountryCodeHidden").val(countryCodeValue);
+            }
+            
+            // Initialize Morocco fields visibility
+            if (countryCodeValue === "MA") {
+                $("#IdenityCardId").closest(".form-group").show();
+                $("#IdentityCardNumber").closest(".form-group").show();
+            } else {
+                $("#IdenityCardId").closest(".form-group").hide();
+                $("#IdentityCardNumber").closest(".form-group").hide();
+            }
+        });
+
+        function GetReceiverInformation(receiverId) {
+            $.getJSON("/SenderCashPickUp/GetReceiverInformation?receiverId=" + receiverId, function (result) {
+                if (result) {
+                    if (result.FullName) {
+                        $("#FullName").val(result.FullName);
+                    }
+                    if (result.Country) {
+                        $("#CountryCode").val(result.Country);
+                    }
+                    if (result.CountryPhoneCode) {
+                        $("#Phonecode").text(result.CountryPhoneCode);
+                    }
+                }
+            }).fail(function () {
+                console.error("Error loading receiver information");
+            });
+        }
+
+        function GetCountryPhoneCode(countryCode) {
+            $.getJSON("/SenderCashPickUp/GetCountryPhoneCode?countryCode=" + countryCode, function (result) {
+                if (result && result.CountryPhoneCode) {
+                    $("#Phonecode").text(result.CountryPhoneCode);
+                }
+            }).fail(function () {
+                console.error("Error loading country phone code");
+            });
+        }
+    </script>
+}
+

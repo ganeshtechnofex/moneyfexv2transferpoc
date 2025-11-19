@@ -1,0 +1,652 @@
+.dynamic-bank-list ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+.dynamic-bank-list {
+    border-top: solid 1px #eee;
+    margin-top: 30px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.dynamic-bank-list ul li {
+    border: solid 1px #eee;
+    border-radius: 5px;
+    border-collapse: collapse;
+}
+
+.dynamic-bank-list ul li {
+    margin: 1px;
+}
+
+
+
+.mf-home-page .exchange-rate-holder {
+/*     font-size: 20px; */
+}
+
+.mf-home-page .estimate-calculator dl dt {
+    font-size: 20px;
+}
+
+.mf-home-page h1 {
+    font-size: 5.4em;
+    line-height: 1.2;
+}
+.form-home-page
+{
+  margin-bottom: 25px;
+  clear: both !important;
+}
+.form-home-page label {
+    display: inline-block !important;
+    padding: 0;
+    line-height: normal;
+    min-height: auto;
+}
+.exchange-rate-wraper {
+    background: #02b6ff;
+    color: #fff;
+    text-align: center;
+    padding: 8px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    clear: both;
+}
+
+.exchange-rate-wraper h2 {
+    font-size: 30px;
+    color: #fff;
+    margin: 5px 0;
+}
+.exchange-rate-wraper p
+{
+   color: #fff;
+   font-weight: 400;
+}
+.exchange-rate-wraper h2 a {
+    color: #004468;
+}
+
+.radio-box {
+}
+
+/* Hide the browser's default radio button */
+.radio-box input {
+}
+
+/* Create a custom radio button */
+.checkmark {
+  position: absolute;
+  bottom: -11px;
+  left: 40%;
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
+  border: solid 2px #ddd;
+}
+
+/* On mouse-over, add a grey background color */
+.radio-box:hover input ~ .checkmark {
+  /* background-color: #ccc; */
+}
+
+/* When the radio button is checked, add a blue background */
+.radio-box input:checked ~ .checkmark {
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+/* .radio-box input:checked ~ .checkmark:after {
+ display: block;
+  content: "\e013";  
+  display: inline-block;  
+ font-family: 'Glyphicons Halflings';
+  color: #fff; 
+  background: #fff;  
+} */
+
+/* Style the indicator (dot/circle) */
+.radio-box .checkmark:after {
+  /* background: white; */
+}
+
+.radio-box img
+{
+    width: 40px;
+    margin: 0 auto;
+}
+
+ @media only screen and (max-width: 600px) {
+.radio-box img
+{
+  width: 30px;
+  margin-bottom: 4px;
+}
+.display-inline
+{
+  width: 100%;
+}
+
+.transfer-type h4 
+{
+      margin-bottom: 8px;
+      font-size: 15px;
+      line-height: 20px !important;
+}
+label.radio-box p
+{
+  font-size: 15px !important;
+}
+}
+  
+ 
+.transfer-type h4 {
+       display: block !important;
+    width: 100%;
+     margin: 0;
+    font-size: 16px !important;
+    font-weight: bold;
+        line-height: 22px;
+}
+.form-home-page .radio, .checkbox {
+    float: left;
+}
+
+
+
+
+
+
+
+.form-home-page input, .form-home-page select, 
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+  width: 100% !important;
+    min-width: 100px !important;
+    border: solid 2px #02b6ff !important;
+    border-radius: 10px !important;
+    padding: 20px 15px 15px 15px !important;
+    font-size: 25px !important;
+    display: inline-block !important;
+    -moz-appearance: textfield !important;
+    outline: 0 !important;
+}
+/* .select2-container--default .select2-selection--single .select2-selection__rendered {
+    width: 100% !important;
+    min-width: 100px !important;
+    border: solid 2px #02b6ff !important;
+    border-radius: 10px !important;
+    padding: 18px 15px !important;
+    font-size: 20px !important;
+    display: inline-block !important;
+    -moz-appearance: textfield !important; 
+    position: relative !important;
+} */
+
+
+.align-middle {
+    vertical-align: middle!important;
+}
+.pattern3
+{
+ background: #fff url(../images/pattern2.png) no-repeat 0 0;
+}
+.form-home-page .niceCountryInputMenu 
+{
+   width: 100%;
+   min-width: 100px;
+   border: solid 2px #02b6ff;
+   border-radius: 10px;
+   padding: 24px 10px;
+   display: block;
+    position: relative;
+}.form-home-page .niceCountryInputMenu span {
+    font-size: 20px;
+}
+.countr-code-home {
+    position: absolute;
+    z-index: 9;
+    padding: 20px 0 0 15px;
+    left: 0;
+}
+ ul.small-nav {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+ul.small-nav li {
+    display: inline-block;
+}
+
+ul.small-nav li a {
+    padding: 1px 15px;
+    color: #014667;
+     letter-spacing: 2px;
+}
+ul.small-nav li a:hover, ul.small-nav li a:focus {
+    color: #02b6ff;
+}
+.label-fontsize .radio {
+    font-size: 18px;
+}
+
+@media only screen and (max-width: 768px) {
+
+ 
+
+.mf-home-page h1 {
+    font-size: 32px;
+    }
+
+    .niceCountryInputMenuDropdownContent  
+    {
+      width: 100%;
+    }
+    .niceCountryInputMenuFilter
+    {
+      width: 100% !important;
+    }
+}
+button.btn-transfer, a.btn-transfer, input.btn-transfer {
+    background: #02b6ff;
+    color: #fff;
+    border: 0;
+    outline: 0;
+    padding: 10px 50px;
+    text-align: center;
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+button.btn-transfer:hover, button.btn-transfer:focus, 
+a.btn-transfer:hover, a.btn-transfer:focus, 
+input.btn-transfer:hover, input.btn-transfer:focus {
+   background: #003d55;
+    color: #fff;
+}
+.navbar-default
+{
+  overflow: unset;
+      padding: 5px 0;
+      border-radius: 0 !important;
+}
+.footer a {
+    color: #fff;
+}
+
+/*  */
+ 
+.form-control-placeholder {
+ position: absolute;
+    top: 0;
+    left: 0;
+    padding: 7px 0 0 13px !important;
+    transition: all 200ms;
+    opacity: 0.9;
+        margin: 0 !important;
+            color: #004468;
+}
+input.form-calculate:focus + .form-control-placeholder,
+.form-control:focus + .form-control-placeholder,
+.form-control:valid + .form-control-placeholder {
+  font-size: 100%;
+  transform: translate3d(0, -105%, 0);
+  opacity: 1;
+      color: #02b6ff;
+      font-size: 15px;
+}
+
+
+/*  */
+
+
+input.primary-placeholder::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #02b6ff;
+ }
+
+input.primary-placeholder:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #02b6ff;
+}
+
+input.primary-placeholder::-ms-input-placeholder { /* Microsoft Edge */
+  color: #02b6ff;
+}
+@media only screen and (max-width: 768px) {
+.form-control-placeholder
+{
+      font-size: 12px;
+      padding: 5px 0 0 13px !important;
+}
+/* .form-home .col-lg-8, .form-home .col-lg-4 {
+    padding: 0 2px 0px 2px;
+} */
+
+
+}
+ 
+ 
+ 
+.exchange-rate-wraper-new {
+    background: #02b6ff;
+    color: #fff;
+    text-align: center;
+    padding: 5px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    clear: both;
+}
+
+.exchange-rate-wraper-new h2 {
+    font-size: 24px;
+    color: #fff;
+    margin: 5px 0;
+    display: inline-flex;
+}
+ 
+.exchange-rate-wraper-new h2 a {
+        color: #fff;
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+    background: rgb(6, 135, 187);
+    border-radius: 50%;
+    font-weight: 300;
+    display: inline-block;
+    border: solid 1px #026396;
+    margin-left: 8px;
+    line-height: 17px;
+    margin-top: 6px;
+}
+
+.radio-box {
+  display: block;
+  position: relative !important;
+  /* padding-left: 35px; */
+  /* margin-bottom: 12px; */
+  cursor: pointer;
+  /* font-size: 22px; */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  margin-right: 10px;
+}
+
+/* Hide the browser's default radio button */
+.radio-box input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+ 
+/* On mouse-over, add a grey background color */
+.radio-box:hover input ~ .checkmark {
+  /* background-color: #ccc; */
+}
+
+/* When the radio button is checked, add a blue background */
+.radio-box input:checked ~ .checkmark {
+  background-color: #02b6ff;
+  border-color: #02b6ff;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+
+
+/* Style the indicator (dot/circle) */
+.radio-box .checkmark:after {
+  content: "\e013";
+    display: inline-block !important;
+    font-family: 'Glyphicons Halflings';
+    display: block;
+  font-weight: normal;
+    font-size: 12px;
+    line-height: 20px;
+    top: 0;
+    color: #fff;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* background: white; */
+    border-color: #02b6ff;
+}
+
+ 
+
+label.radio-box p {
+    margin-bottom: 15px;
+    color: #003d55;
+        font-size: 16px;
+}
+ 
+ label.radio-box.disabled h4 {
+    color: #c4c3c3;
+}
+
+label.radio-box.disabled img {
+    filter: #c4c3c3; /* IE6-9 */
+    -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
+    filter: grayscale(1); /* Microsoft Edge and Firefox 35+ */
+}
+
+.transfer-type {
+   
+text-align: center;
+   
+border: solid 1px #ccc;
+   
+width: 100%;
+   
+padding: 10px 20px;
+   
+margin-bottom: 20px;
+   
+border-radius: 8px;
+}
+
+.display-inline
+{
+   display: inline-flex;
+   color: #00adef;
+} 
+.form-home-page .radio, .checkbox {
+    float: left;
+}
+
+
+
+
+.dropdown-backdrop
+{
+  display: none;
+}
+ 
+
+ /* new calculator */
+ .mf-form-calculator {
+    display: block;
+    border-radius: 4px;
+    background-color: #fff;
+    border: solid 1px #ccc;
+    width: 100%;
+    position: relative;
+    height: 70px;
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
+  span.mf-calculator-label {
+  display: inline-block;
+  padding: 0 20px;
+  width: calc(100% - 110px);
+  float: left;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 20px;
+  margin-bottom: 5px;
+  color: #004468;
+  }
+
+
+.mf-form-calculator input {
+    width: calc(100% - 110px);
+    border-radius: 4px;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+    border: none;
+    margin: 0;
+    outline: none;
+    padding: 0 0 0 20px;
+    height: 25px;
+    float: left;
+    font-size: 24px;
+}
+
+  .mf-currency {
+   width: 110px;
+   padding-right: 40px;
+   display: inline-block;
+   cursor: pointer;
+   font-size: 16px;
+   margin: 5px 0;
+   border-left: solid 1px #ccc;
+   vertical-align: middle;
+   line-height: 35px;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   color: #004468;
+}
+
+.mf-currency span.mf-currency-select {
+    margin-left: 10px;
+}
+ .select-arrow {
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    transform: rotate(225deg);
+    cursor: pointer;
+    background: -moz-linear-gradient(-45deg, #b3b3b3 0%, #b3b3b3 50%, transparent 50%, transparent 100%);
+    background: -webkit-linear-gradient(-45deg, #b3b3b3 0%, #b3b3b3 50%, transparent 50%, transparent 100%);
+    background: linear-gradient(135deg, #b3b3b3 0%, #b3b3b3 50%, transparent 50%, transparent 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b3b3b3', endColorstr='#7cbc0a',GradientType=1);
+}
+.arrow-wrapper {
+    display: block;
+    position: absolute;
+    right: 20px;
+    top: 30%;
+    padding: 10px 17px;
+    background: #fff;
+    z-index: 9;
+}
+
+.select-arrow {
+        display: block;
+     right: 20px;
+ }
+
+/* drop down */
+.currency-dropdown {
+    /* display: none; */
+    position: absolute;
+    top: 100%;
+    left: -1px;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 4px 10px 20px 0 rgba(0,0,0,0.15);
+    width: calc(100% + 2px);
+    padding: 20px 0;
+    z-index: 10;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 0;
+    -ms-overflow-style: scroll;  
+    scrollbar-width: none;   
+}
+/*.currency-dropdown::-webkit-scrollbar { 
+  display: none;  // Safari and Chrome
+  }*/
+.mf-form-calculator .currency-dropdown {
+    top: 61px;
+}
+
+.currency-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.currency-dropdown ul .currency-dropdown_option {
+    padding: 10px 20px;
+    cursor: pointer;
+    text-align: left;
+}
+.currency-dropdown ul .currency-dropdown_option:hover {
+    background: rgba(0,0,0,0.1);
+}
+.currency-dropdown ul .currency-dropdown_option .currency-dropdown_option_flag {
+       display: inline-block;
+    height: 19px;
+    margin-right: 10px;
+    width: 19px;
+    vertical-align: middle;
+    border-radius: 50%;
+}
+.currency-dropdown ul .currency-dropdown_option .currency-dropdown_option_flag img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+.currency-dropdown ul .currency-dropdown_option .currency-dropdown_option_text {
+    font-size: 14px;
+    color: #333;
+    line-height: 16px;
+}
+
+.currency-dropdown.closed {
+    display: none;
+}
+
+
+.currency-search {border-bottom: solid 1px #eee;padding: 0 20px 8px;margin-top: -6px;}
+
+
+
+input.input-currency-search {
+    width: 100%;
+    font-size: 17px;
+    padding-left: 35px;
+}
+.currency-search .search-input::before
+{
+  content: "\f002";
+  font: normal normal normal 14px/1 FontAwesome;
+  position: absolute;
+  top: 17px;
+  font-size: 17px;
+}

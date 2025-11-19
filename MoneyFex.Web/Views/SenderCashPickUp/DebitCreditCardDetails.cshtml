@@ -1,0 +1,223 @@
+@model MoneyFex.Web.ViewModels.CreditDebitCardViewModel
+@using MoneyFex.Core.Entities.Enums
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Card payment";
+}
+
+@using (Html.BeginForm("DebitCreditCardDetails", "SenderCashPickUp", FormMethod.Post, new { id = "cardPaymentForm", autocomplete = "off" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.TransactionId)
+    @Html.HiddenFor(m => m.ReceiptNo)
+    @Html.HiddenFor(m => m.FaxingCurrencySymbol)
+    @Html.HiddenFor(m => m.FaxingAmount)
+    @Html.HiddenFor(m => m.FaxingCurrency)
+
+    <div class="real_form pattern2 pdt40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="flag-icon flag-icon-@ViewBag.ReceivingCountry"></i> @ViewBag.ReceivingCountryCurrency @ViewBag.TransferMethod</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-money"></i> Amount @ViewBag.SendingCountryCurrency @ViewBag.SendingAmount</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-user"></i> @ViewBag.ReceiverName</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="SenderCashPickUp" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="login_signup mb50 clearfix text-center">
+                        <div class="flex-container amount-group flex-middle">
+                            <div>
+                                <div class="userimage">
+                                    <i class="fa fa-user-circle fa-3x text-primary"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="font-30 text-primary">@Model.ReceiverName</span>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="col-lg-6 col-lg-offset-3 text-center mb30 mt20">
+                            <div class="text-right wallet-balance card-body">
+                                <h5>Amount including fee</h5>
+                                <h1 class="text-primary">@Model.FaxingCurrencySymbol<span class="amountheader"> @Model.FaxingAmount.ToString("N2")</span></h1>
+                            </div>
+                        </div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger text-left"></div>
+                        
+                        @if (!string.IsNullOrEmpty(ViewBag.CardErrorMessage as string))
+                        {
+                            <div class="alert alert-danger text-left">
+                                @ViewBag.CardErrorMessage
+                            </div>
+                        }
+
+                        <div class="panel panel-default text-left">
+                            <div class="panel-heading">
+                                <i class="fa fa-cc-visa fa-2x text-primary" id="VisaIcon"></i>
+                                <i class="fa fa-cc-mastercard fa-2x text-primary" id="MasterIcon" style="display:none;"></i>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m.CardNumber, new { @class = "form-control", placeholder = "Card number", @id = "CardNumber" })
+                                    @Html.ValidationMessageFor(m => m.CardNumber, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            @Html.TextBoxFor(m => m.EndMM, new { @class = "form-control", placeholder = "MM", @id = "EndMM", maxlength = "2" })
+                                            @Html.ValidationMessageFor(m => m.EndMM, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            @Html.TextBoxFor(m => m.EndYY, new { @class = "form-control", placeholder = "YY", @id = "EndYY", maxlength = "2" })
+                                            @Html.ValidationMessageFor(m => m.EndYY, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            @Html.TextBoxFor(m => m.SecurityCode, new { @class = "form-control", placeholder = "CVV", @type = "password", @id = "SecurityCode", maxlength = "4" })
+                                            @Html.ValidationMessageFor(m => m.SecurityCode, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m.NameOnCard, new { @class = "form-control", placeholder = "Name on card" })
+                                    @Html.ValidationMessageFor(m => m.NameOnCard, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m.AddressLineOne, new { @class = "form-control", placeholder = "Address line 1" })
+                                    @Html.ValidationMessageFor(m => m.AddressLineOne, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m.AddressLineTwo, new { @class = "form-control", placeholder = "Address line 2 (optional)" })
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            @Html.TextBoxFor(m => m.CityName, new { @class = "form-control", placeholder = "City" })
+                                            @Html.ValidationMessageFor(m => m.CityName, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            @Html.TextBoxFor(m => m.ZipCode, new { @class = "form-control", placeholder = "Postal code" })
+                                            @Html.ValidationMessageFor(m => m.ZipCode, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m.CountyName, new { @class = "form-control", placeholder = "Country" })
+                                    @Html.ValidationMessageFor(m => m.CountyName, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group">
+                                    <label>Save this card for future use?</label>
+                                    <div>
+                                        <label class="radio-inline">@Html.RadioButtonFor(m => m.SaveCard, true) Yes</label>
+                                        <label class="radio-inline">@Html.RadioButtonFor(m => m.SaveCard, false) No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center clearfix">
+                        <hr />
+                        <button type="submit" id="confirmCardPayment" class="btn btn-primary btn-lg mb30">Confirm &amp; Transfer <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                        <div class="clearfix mb20"></div>
+                        <a asp-action="InternationalPayNow" asp-route-transactionId="@Model.TransactionId"><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            $("#CardNumber").on("keyup", function () {
+                var value = $(this).val() || "";
+                if (value.startsWith("4")) {
+                    $("#VisaIcon").show();
+                    $("#MasterIcon").hide();
+                } else if (value.startsWith("5")) {
+                    $("#VisaIcon").hide();
+                    $("#MasterIcon").show();
+                }
+            });
+
+            $("#confirmCardPayment").on("click", function () {
+                if ($("#loader").length) {
+                    $("#loader").show();
+                }
+            });
+
+            // Format card number with spaces (every 4 digits)
+            $("#CardNumber").on("keyup", function () {
+                var value = $(this).val().replace(/\s/g, "");
+                var formattedValue = value.match(/.{1,4}/g)?.join(" ") || value;
+                if (formattedValue !== value) {
+                    $(this).val(formattedValue);
+                }
+            });
+        })();
+    </script>
+}
+

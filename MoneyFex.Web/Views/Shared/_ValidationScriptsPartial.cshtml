@@ -1,0 +1,26 @@
+@* Client-side validation scripts for ASP.NET Core MVC *@
+@* jQuery Validation *@
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script>
+    // Fallback to CDN if local file failed to load
+    if (typeof jQuery === 'undefined' || typeof jQuery.validator === 'undefined') {
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js';
+        script.integrity = 'sha512-rstIgDs0xPgmG6RX1PRbaAoA5jymab25gXCpSVlnz7l65W3kUq3v2esf04v41E2Q6+ME2pCL9sTyGQ4HHaJ4T8jw==';
+        script.crossOrigin = 'anonymous';
+        document.head.appendChild(script);
+    }
+</script>
+
+@* jQuery Validation Unobtrusive *@
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    // Fallback to CDN if local file failed to load
+    if (typeof jQuery === 'undefined' || typeof jQuery.validator === 'undefined' || typeof jQuery.validator.unobtrusive === 'undefined') {
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js';
+        script.integrity = 'sha512-o6XqxgrUsKmchwy9G5VRN9SSNzacXRZbY7xIq/0uPjh6kTxzDIHxcPfCsaTpwrAmUeBPhZ0lBJztZZFC9QenbQ==';
+        script.crossOrigin = 'anonymous';
+        document.head.appendChild(script);
+    }
+</script>

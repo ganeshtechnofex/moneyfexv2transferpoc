@@ -1,0 +1,410 @@
+.or_css {
+    font-weight: 600;
+    margin: 0;
+    padding: 10px 0;
+}
+
+.dynamic_bg_form {
+    background: #eee;
+    padding: 8px 0;
+    border-bottom: solid 1px #ddd;
+}
+
+.real_form {
+    background: #fff;
+    padding: 80px 0;
+}
+
+.dynamic_footer {
+    padding: 20px 0 25px;
+    border-top: 1px solid #DFDDDC;
+    background-color: #eee;
+}
+
+.dynamic_bg_form h1 {
+    font-size: 22px;
+    margin: 0;
+    padding: 0;
+}
+
+.progress-bar {
+    box-shadow: none !important;
+    -webkit-transition: all 0.8s ease-in-out;
+    -moz-transition: all 0.8s ease-in-out;
+    -o-transition: all 0.8s ease-in-out;
+    transition: all 0.8s ease-in-out;
+}
+
+.progress .arrow {
+    display: inline-block;
+    border-top: 14px solid transparent;
+    border-bottom: 11px solid transparent;
+    border-left: 8px solid #07acec;
+}
+
+.real_form label {
+    margin-bottom: 15px;
+    margin-top: 10px;
+    font-weight: normal;
+    display: block;
+    width: 100%;
+}
+
+.fbtn .fa {
+    font-weight: normal;
+    font-size: 10px;
+}
+
+.fbtn {
+    padding: 10px 50px;
+    color: #fff;
+    border-radius: 50px;
+    font-size: 15px;
+    border: 0;
+    font-weight: 600;
+    outline: 0;
+}
+
+.btn-back {
+    background: #003d55;
+    float: left;
+    webkit-box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+}
+
+    .btn-back:hover, .btn-back:focus {
+        background: #055c7d;
+        color: #fff;
+    }
+
+.btn-next {
+    background: #02b6ff;
+    float: right;
+    webkit-box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+}
+
+    .btn-next:hover, .btn-next:focus {
+        background: #0795cc;
+        color: #fff;
+    }
+
+.pattern1 {
+    position: relative;
+    overflow: hidden;
+    background: url(../images/pattern1.jpg);
+}
+
+.pattern2 {
+    position: relative;
+    overflow: hidden;
+    background: url(../images/pattern2.jpg);
+}
+
+.login_signup {
+    box-shadow: 1px 1px 8px #ddd;
+    -webkit-box-shadow: 1px 1px 8px #ddd;
+    -o-box-shadow: 1px 1px 8px #ddd;
+    -khtml-box-shadow: 1px 1px 8px #ddd;
+    -moz-box-shadow: 1px 1px 8px #ddd;
+    background: #fff;
+    position: relative;
+    padding: 30px;
+    border-radius: 10px;
+    overflow: hidden;  
+}
+/**/
+.user_image i.fa {
+    color: #fff;
+    font-size: 15px;
+    line-height: 40px;
+    font-weight: 300;
+}
+
+.user_image {
+   background: #02b6ff;
+   width: 40px;
+   height: 40px;
+   border-radius: 50%;
+   float: left;
+   text-align: center;
+   margin-right: 10px;
+   padding: 1px;
+}
+.user_details {
+    float: right;
+    position: relative;
+    text-align: left;
+}
+
+.user_details button, .user_details a {
+    margin: 0;
+    padding: 0;
+    color: #00b6ff !important;
+}
+a.logout, button.logout {
+  position: absolute;
+    bottom: 0;
+    color: #04b6ff !important;
+    width: 100%;
+
+}
+/**/
+/**/
+section.dashboard {
+    padding: 30px 0;
+}
+
+.dashboard_sidebar ul .dropdown-divider {
+    padding: 5px;
+}
+
+.dashboard_header {
+    background: #eee;
+    padding: 0 18px;
+    border-bottom: solid 1px #ddd;
+}
+
+    .dashboard_header h1 {
+        font-size: 22px;
+        margin: 0;
+        padding: 0;
+    }
+
+.dashboard_body {
+ /*   padding: 20px; */
+    /* background: #fff; */
+    box-shadow: 1px 1px 8px #ddd;
+    -webkit-box-shadow: 1px 1px 8px #ddd;
+    -o-box-shadow: 1px 1px 8px #ddd;
+    -khtml-box-shadow: 1px 1px 8px #ddd;
+    -moz-box-shadow: 1px 1px 8px #ddd;
+    background: #fff;
+    position: relative;
+    padding: 30px;
+    border-radius: 10px;
+}
+
+.dashboard_sidebar {
+    padding: 10px;
+    border: solid 1px #dbdbdc;
+}
+
+    .dashboard_sidebar ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+        .dashboard_sidebar ul li {
+            display: block;
+        }
+
+            .dashboard_sidebar ul li a {
+                padding: 3px 9px;
+                display: block;
+                border-bottom: solid 1px #eee;
+                background: #ffffff;
+                margin-bottom: 8px;
+                color: #5c7cb5;
+            }
+
+                .dashboard_sidebar ul li a:after {
+                    content: ">";
+                    float: right;
+                }
+
+                .dashboard_sidebar ul li a:hover {
+                    background: #5c7cb5;
+                    color: #fff;
+                }
+/**/
+@media only screen and (max-width: 800px) {
+
+a.logout, button.logout {
+    
+    font-size: 13px;
+}
+
+    .login_dropdown ul li a.dropdown-toggle {
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 12px;
+    }
+
+
+    /*  .pull-right, .pull-left
+{
+float: none !important;
+} */
+    .circle:after {
+        content: "";
+        background: none !important;
+        width: 363px;
+        height: 103px;
+        position: absolute;
+        margin-top: -47px;
+        left: 106px;
+        display: none !important;
+    }
+
+    .gear a.editlink {
+        display: block !important;
+        position: relative !important;
+        clear: both !important;
+    }
+
+    .datainfo, .hlite {
+        display: block !important;
+    }
+
+    .savebtn {
+        position: relative !important;
+        margin-top: 8px !important;
+    }
+
+    .btn-back {
+        margin-bottom: 10px;
+    }
+
+    .btn-next, .btn-back {
+        float: none;
+        display: block;
+        text-align: center;
+    }
+
+    button.fbtn.btn-next, input.fbtn.btn-next {
+        display: block !important;
+        width: 100%;
+    }
+
+    .login_dropdown .dropdown-menu {
+        position: absolute;
+        left: -110px;
+    }
+
+    .mobile_design .col-lg-4 h4, .col-lg-6 h4, .col-lg-3 h4 {
+        font-size: 10px !important;
+        font-weight: 700;
+    }
+
+    .mobile_design .col-lg-3 .dashboard_thumb, .mobile_design .col-lg-4 .dashboard_thumb, .mobile_design .col-lg-6 .dashboard_thumb {
+        padding: 35px 0 0 0 !important;
+    }
+
+    .block_btn_mobile {
+        display: block !important;
+        margin-bottom: 5px;
+    }
+}
+
+.menu_afterlogin div#menu-button {
+    float: left;
+    color: #5c7cb5 !important;
+}
+
+.menu_afterlogin ul.open {
+    margin-top: 50px !important;
+}
+
+li.has-sub ul.open {
+    margin: 0 !important;
+}
+
+.profileinfo {
+    padding: 4px 10px;
+}
+
+    .profileinfo h2 {
+        position: relative;
+        left: -250px;
+    }
+
+.gear {
+    position: relative;
+    display: block;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+    .gear a.editlink {
+        position: absolute;
+        right: 0;
+        top: 0px;
+    }
+
+.datainfo {
+    margin-left: 10px;
+    color: #333;
+}
+
+label {
+    display: inline;
+    font-weight: bold;
+    color: #696969;
+    width: 100px;
+}
+/** @group form inputs **/
+.hlite {
+    background: #e2e8f6;
+    border: 1px solid #bdc7d8;
+    width: 250px;
+    margin-left: -7px;
+    padding: 4px 7px;
+    color: #565656;
+}
+/** @group buttons **/
+.savebtn {
+    position: absolute;
+    right: 0;
+    top: 0px;
+    padding: 2px 8px;
+    background: #5972a8;
+    font-size: 1.2em;
+    cursor: pointer;
+    border: 1px solid #1a356e;
+    color: #fff;
+    -webkit-box-shadow: inset 0 1px 0 #8a9cc2;
+    -moz-box-shadow: inset 0 1px 0 #8a9cc2;
+    box-shadow: inset 0 1px 0 #8a9cc2;
+    margin-bottom: 5px;
+    margin-top: -5px;
+    display: none;
+}
+
+    .savebtn:hover {
+        color: #fff;
+        background: #607db7;
+        text-decoration: none;
+    }
+
+    .savebtn:active {
+        background: #556790;
+    }
+
+h1 span.account-balance {
+    font-size: 16px;
+    border: solid 1px #02b6ff;
+    padding: 0px 15px;
+    border-radius: 20px;
+    background: #fff;
+    display: inline-block;
+}
+
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
+
+    .btn-next, .btn-back {
+        float: left !important;
+    }
+
+     button.fbtn.btn-next, a.fbtn.btn-next, input.fbtn.btn-next {
+        float: right !important;
+        display: inline-block !important;
+        width: auto;
+    }
+
+    .dynamic_footer br {
+        display: none !important;
+    }
+}

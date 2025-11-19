@@ -1,0 +1,290 @@
+@model MoneyFex.Core.Entities.BankAccountDeposit
+@using MoneyFex.Core.Entities.Enums
+
+@{
+    ViewData["Title"] = "Bank Deposit Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var transaction = Model.Transaction;
+    var sender = transaction?.Sender;
+    
+    // Get currency symbols
+    string sendingCurrencySymbol = transaction?.SendingCurrency == "GBP" ? "£" : 
+                                   transaction?.SendingCurrency == "USD" ? "$" : 
+                                   transaction?.SendingCurrency == "EUR" ? "€" : 
+                                   transaction?.SendingCurrency ?? "";
+    string receivingCurrencySymbol = transaction?.ReceivingCurrency == "NGN" ? "₦" : 
+                                     transaction?.ReceivingCurrency == "GHS" ? "₵" : 
+                                     transaction?.ReceivingCurrency == "KES" ? "KSh" : 
+                                     transaction?.ReceivingCurrency ?? "";
+    
+    // Get staff names
+    string payingStaffName = transaction?.PayingStaff != null 
+        ? $"{transaction.PayingStaff.FirstName} {transaction.PayingStaff.LastName}" 
+        : "";
+    string updatedByStaffName = transaction?.UpdatedByStaff != null 
+        ? $"{transaction.UpdatedByStaff.FirstName} {transaction.UpdatedByStaff.LastName}" 
+        : "";
+    string transactionStaff = !string.IsNullOrEmpty(payingStaffName) ? payingStaffName : 
+                             !string.IsNullOrEmpty(updatedByStaffName) ? updatedByStaffName : "N/A";
+}
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="page-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-header border-bottom">
+                                    <h4 class="f-left f-left m-t-5 m-b-0">
+                                        <label class="text-primary">@(Model.BankName ?? Model.Bank?.Name ?? "")/@(Model.ReceiverName ?? "")</label>
+                                        <span>
+                                            Account No: @(Model.ReceiverAccountNo ?? "N/A")
+                                            <br>Country: @(transaction?.ReceivingCountry?.CountryName ?? transaction?.ReceivingCountryCode ?? "")
+                                        </span>
+                                    </h4>
+                                    <a href="@Url.Action("Index", "TransactionHistory")" class="btn btn-primary f-right btn-round">
+                                        <i class="fa fa-angle-left m-r-5"></i> Back
+                                    </a>
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="col-lg-6 col-sm-12 col-xs-12 offset-lg-3">
+                                        <div class="dt-responsive table-responsive">
+                                            <table width="100%">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="p-t-10 p-b-10">
+                                                                <h5>Bank Deposit</h5>
+                                                                <span class="text-primary">@(transaction?.ReceiptNo ?? "N/A")</span>
+                                                            </div>
+                                                        </td>
+                                                        <td align="right">
+                                                            <div class="p-t-10 p-b-10">
+                                                                <h5>Bank Deposit</h5>
+                                                                <span class="text-success">@(transaction?.Status.ToString() ?? "N/A")</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            
+                                            <table class="table table-striped table-bordered nowrap">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-left">Sender</td>
+                                                        <td class="text-left">@(sender?.FirstName ?? "") @(sender?.LastName ?? "")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Email Address</td>
+                                                        <td class="text-left">@(sender?.Email ?? "N/A")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Telephone</td>
+                                                        <td class="text-left">@(sender?.PhoneNumber ?? "N/A")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Account No</td>
+                                                        <td class="text-left">@(sender?.AccountNo ?? "N/A")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Receiver Name</td>
+                                                        <td class="text-left">@(Model.ReceiverName ?? "N/A")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Bank Name</td>
+                                                        <td class="text-left">@(Model.BankName ?? Model.Bank?.Name ?? "N/A")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Bank Branch</td>
+                                                        <td class="text-left">N/A</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Account Number</td>
+                                                        <td class="text-left">@(Model.ReceiverAccountNo ?? "N/A")</td>
+                                                    </tr>
+                                                    @if (!string.IsNullOrEmpty(transactionStaff) && transactionStaff != "N/A")
+                                                    {
+                                                        <tr>
+                                                            <td class="text-left">Transaction Staff</td>
+                                                            <td class="text-left"><a href="">@transactionStaff</a></td>
+                                                        </tr>
+                                                    }
+                                                    <tr>
+                                                        <td class="text-left">Receiver Country</td>
+                                                        <td class="text-left">@(transaction?.ReceivingCountry?.CountryName ?? transaction?.ReceivingCountryCode ?? "N/A")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Amount Sent</td>
+                                                        <td class="text-left">@sendingCurrencySymbol @(transaction?.SendingAmount.ToString("N2") ?? "0.00")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Fee</td>
+                                                        <td class="text-left">@sendingCurrencySymbol @(transaction?.Fee.ToString("N2") ?? "0.00")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Amount Paid</td>
+                                                        <td class="text-left">@sendingCurrencySymbol @(transaction?.TotalAmount.ToString("N2") ?? "0.00")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Exchange Rate</td>
+                                                        <td class="text-left">1 @(transaction?.SendingCurrency ?? "") = @(transaction?.ExchangeRate.ToString("N6") ?? "0.000000") @(transaction?.ReceivingCurrency ?? "")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">@(Model.ReceiverName ?? "Receiver") will receive</td>
+                                                        <td class="text-left">@receivingCurrencySymbol @(transaction?.ReceivingAmount.ToString("N2") ?? "0.00") @(transaction?.ReceivingCurrency ?? "")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">Payment Method</td>
+                                                        <td class="text-left">@(transaction?.SenderPaymentMode.ToString() ?? "N/A")</td>
+                                                    </tr>
+                                                    @if (!string.IsNullOrEmpty(transaction?.PaymentReference))
+                                                    {
+                                                        <tr>
+                                                            <td class="text-left">Payment Reference</td>
+                                                            <td class="text-left">@transaction.PaymentReference</td>
+                                                        </tr>
+                                                    }
+                                                    <tr>
+                                                        <td class="text-left">Date</td>
+                                                        <td class="text-left">@(transaction?.TransactionDate.ToString("dd/MM/yyyy HH:mm:ss") ?? "N/A")</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer bg-light">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-sm-12 col-xs-12 offset-lg-3 text-center">
+                                            <a href="@Url.Action("Index", "TransactionHistory")" class="btn btn-primary btn-round">
+                                                <i class="fa fa-angle-left"></i> Back to Transactions
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pcoded-content {
+        padding: 20px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        clear: both;
+        overflow: hidden;
+    }
+    .pcoded-inner-content {
+        clear: both;
+        overflow: hidden;
+    }
+    .main-body {
+        clear: both;
+        overflow: hidden;
+    }
+    .page-wrapper {
+        clear: both;
+        overflow: hidden;
+    }
+    .page-body {
+        clear: both;
+        overflow: hidden;
+        padding: 0;
+    }
+    .card {
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 4px;
+        margin-bottom: 20px;
+        clear: both;
+        overflow: hidden;
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 15px 20px;
+        clear: both;
+        overflow: hidden;
+    }
+    .card-header::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+    .card-body {
+        padding: 20px;
+        clear: both;
+        overflow: hidden;
+    }
+    .card-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 15px 20px;
+        clear: both;
+        overflow: hidden;
+    }
+    .text-primary {
+        color: #007bff !important;
+    }
+    .text-success {
+        color: #28a745 !important;
+    }
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0,0,0,.05);
+    }
+    .table-bordered {
+        border: 1px solid #dee2e6;
+        margin-bottom: 0;
+    }
+    .table-bordered td {
+        border: 1px solid #dee2e6;
+        padding: 8px;
+    }
+    .btn-round {
+        border-radius: 20px;
+    }
+    .f-right {
+        float: right;
+    }
+    .f-left {
+        float: left;
+    }
+    .m-t-5 {
+        margin-top: 5px;
+    }
+    .m-b-0 {
+        margin-bottom: 0;
+    }
+    .m-r-5 {
+        margin-right: 5px;
+    }
+    .p-t-10 {
+        padding-top: 10px;
+    }
+    .p-b-10 {
+        padding-bottom: 10px;
+    }
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+        clear: both;
+    }
+    .col-lg-6.offset-lg-3 {
+        margin-left: 25%;
+        margin-right: 0;
+    }
+    @@media (max-width: 991px) {
+        .col-lg-6.offset-lg-3 {
+            margin-left: 0;
+        }
+    }
+</style>

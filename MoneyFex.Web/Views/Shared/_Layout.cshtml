@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="MoneyFex - Fast Money Transfer">
+    <meta name="keywords" content="Money Transfer, Send Money, International Transfer">
+    <title>@ViewData["Title"] - MoneyFex</title>
+    <link rel="icon" type="image/png" href="~/images/favicon.png">
+    
+    <!-- Bootstrap -->
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/css/flag-icons.min.css" />
+    <!-- Legacy MoneyFex Styles -->
+    <link rel="stylesheet" href="~/css/legacy-style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/legacy-currency.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-2 col-sm-6 col-xs-5">
+                    <div class="logo text-center">
+                        <a asp-controller="Home" asp-action="Index">
+                            <img src="~/images/logo.png" alt="MoneyFex" style="max-height: 50px;">
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-7 col-xs-12">
+                    <div id="navigation" class="pull-right">
+                        <ul>
+                            <li><a asp-controller="Home" asp-action="Index">Home</a></li>
+                            <li>
+                                <a href="javascript:void(0);">How it Works</a>
+                                <ul>
+                                    <li><a href="#">How to send money</a></li>
+                                    <li><a href="#">How to receive money</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Contact Us</a></li>
+                            <li><a href="#">FAQ</a></li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-3 hidden-xs hidden-sm">
+                    <div class="header-action pull-right">
+                        <a href="@Url.Action("Index", "StaffLogin")" class="btn btn-primary btn-sm">Staff Login</a> &nbsp;&nbsp;| &nbsp;&nbsp;
+                        <a href="@Url.Action("Index", "CustomerLogin")" class="btn btn-success btn-sm">Customer Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main style="min-height: calc(100vh - 400px); padding-bottom: 40px;">
+        @RenderBody()
+    </main>
+
+    <div id="footer">
+        <div class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="widget-footer mt40">
+                            <h4>Quick Link</h4>
+                            <ul class="listnone">
+                                <li><a href="#">About Us</a></li>
+                                <li><a href="#">News</a></li>
+                                <li><a href="#">Career</a></li>
+                                <li><a href="#">Contact Us</a></li>
+                                <li><a href="#">FAQ</a></li>
+                                <li><a href="#">Login as an Agent</a></li>
+                                <li><a href="#">Report a Fraud</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="widget-footer mt40">
+                            <h4>Tools</h4>
+                            <ul class="listnone">
+                                <li><a href="#">Find Locations</a></li>
+                                <li><a href="#">Track a Transfer</a></li>
+                                <li><a href="#">How To Send Money</a></li>
+                                <li><a href="#">Managing Your Account</a></li>
+                                <li><a href="#">Daily Rates</a></li>
+                                <li><a href="#">MoneyFex App</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="widget-footer mt40">
+                            <h4>Legal</h4>
+                            <ul class="listnone">
+                                <li><a href="#">Site Terms of use</a></li>
+                                <li><a href="#">Privacy Policy</a></li>
+                                <li><a href="#">Terms and Conditions</a></li>
+                                <li><a href="#">AML Policy</a></li>
+                                <li><a href="#">Cookie Policy</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="widget-footer mt40">
+                            <h4>My Account</h4>
+                            <ul class="listnone">
+                                <li><a href="#">Money Sender Login</a></li>
+                                <li><a href="#">Virtual Account User Login</a></li>
+                                <li><a href="#">Business Login</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="middle-footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <p class="text-center">
+                            MoneyFex Ltd. 1st floor, North Westgate House Harlow, Essex London CM20 1YS United Kingdom | Company Registration Number : 10105082<br>
+                            MoneyFex is Authorised and Regulated by the Financial Conduct Authority (FCA) under the Payment Service Regulations 2017 for the provision of payment service. Registration number: 745989
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tiny-footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 col-xs-12 text-center">
+                        <p>&copy; MoneyFex @DateTime.Now.Year, All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="report-fraud-footer" style="background-color: #014667; padding: 15px 0; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <a href="#" style="color: #fff; opacity: 0.9; text-decoration: none; font-size: 14px;">
+                            &gt; Report a Fraud
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery MUST load first before any scripts that depend on it -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        // Ensure jQuery is loaded and $ is available
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery failed to load!');
+        } else {
+            // Make sure $ is available globally
+            window.$ = window.jQuery = jQuery;
+        }
+    </script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Legacy JavaScript - Load after jQuery -->
+    <script src="~/js/legacy-currency.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,257 @@
+@model MoneyFex.Web.ViewModels.PaymentMethodViewModel
+@using MoneyFex.Core.Entities.Enums
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Choose payment method";
+    var cards = Model.CardDetails ?? new List<MoneyFex.Web.ViewModels.SavedCardViewModel>();
+}
+
+@using (Html.BeginForm("InternationalPayNow", "SenderCashPickUp", FormMethod.Post, new { id = "paymentMethodForm", autocomplete = "off" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.TransactionId)
+    @Html.HiddenFor(m => m.ReceiptNo)
+    @Html.HiddenFor(m => m.TotalAmount)
+    @Html.HiddenFor(m => m.SendingCurrencySymbol)
+    @Html.HiddenFor(m => m.HasKiiPayWallet)
+    @Html.HiddenFor(m => m.HasEnableMoneyFexBankAccount)
+
+    <div class="real_form pattern2 pdt40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="flag-icon flag-icon-@ViewBag.ReceivingCountry"></i> @ViewBag.ReceivingCountryCurrency @ViewBag.TransferMethod</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-money"></i> Amount @ViewBag.SendingCountryCurrency @ViewBag.SendingAmount</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="TransferMoneyNow" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span><i class="fa fa-user"></i> @ViewBag.ReceiverName</span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a asp-controller="SenderCashPickUp" asp-action="Index">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="login_signup mb50 clearfix text-center">
+                        <div class="col-lg-8 col-lg-offset-2 text-center mb30 mt20">
+                            <div class="text-right wallet-balance card-body">
+                                <h5>Amount including fee</h5>
+                                <h1 class="text-primary">@Model.SendingCurrencySymbol<span class="amountheader"> @Model.TotalAmount.ToString("N2")</span></h1>
+                            </div>
+                        </div>
+
+                        <ul class="paymentmethod-list mt20 mb20 text-left">
+                            <h4 class="text-left">@Html.ValidationMessage("TransactionError", "", new { @class = "text-danger" })</h4>
+                            <h4 class="text-left">@Html.ValidationMessage("StripeError", "", new { @class = "text-danger" })</h4>
+                            <h4 class="text-left">
+                                <span id="ErrorMessage" class="text-danger">@ViewBag.ErrorMessage</span>
+                            </h4>
+                            <h4 class="text-left">How do you want to pay?</h4>
+
+                            @{
+                                for (var i = 0; i < cards.Count; i++)
+                                {
+                                    <li>
+                                        <label>
+                                            @Html.RadioButtonFor(m => m.CardDetails[i].IsChecked, cards[i].IsChecked, new { @class = "saved-card-radio", data_index = i })
+                                            <span class="cardsaved"><i class="fa fa-credit-card"></i></span>
+                                            <div class="details_method">
+                                                <span class="title">Saved card ending @cards[i].CardNumber</span>
+                                                <span class="subtitle">Fee: @ViewBag.SendingCountryCurrency @ViewBag.CreditDebitFee</span>
+                                            </div>
+                                        </label>
+
+                                        @Html.HiddenFor(m => m.CardDetails[i].CardId)
+                                        @Html.HiddenFor(m => m.CardDetails[i].CardNumber)
+
+                                        <div class="row saved-card-cvv" data-index="@i" style="display:none;">
+                                            <div class="col-md-offset-3 col-md-6">
+                                                <div class="form-group">
+                                                    @Html.PasswordFor(m => m.CardDetails[i].SecurityCode, new { @class = "form-control", placeholder = "Enter CVV" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                }
+                            }
+
+                            <li>
+                                <label>
+                                    @Html.RadioButtonFor(model => model.SenderPaymentMode, PaymentMode.Card, new { @id = "CreditDebitCard" })
+                                    <span class="cardsaved"><i class="fa fa-credit-card"></i></span>
+                                    <div class="details_method">
+                                        <span class="title">Credit / Debit card</span>
+                                        <span class="subtitle">Card details required · Fee: @ViewBag.SendingCountryCurrency @ViewBag.CreditDebitFee</span>
+                                    </div>
+                                </label>
+                            </li>
+
+                            <li>
+                                <label>
+                                    @Html.RadioButtonFor(model => model.SenderPaymentMode, PaymentMode.BankAccount, new { @id = "MoneyFexBankAccount" })
+                                    <span class="cardsaved"><i class="fa fa-university"></i></span>
+                                    <div class="details_method">
+                                        <span class="title">MoneyFex Bank Account</span>
+                                        <span class="subtitle">Manual bank transfer · Fee: @ViewBag.SendingCountryCurrency @ViewBag.ManualBankDepositFee</span>
+                                    </div>
+                                </label>
+                            </li>
+
+                            @if (Model.HasKiiPayWallet)
+                            {
+                                <li>
+                                    <label>
+                                        @Html.RadioButtonFor(model => model.SenderPaymentMode, PaymentMode.MobileWallet, new { @id = "KiiPayWallet" })
+                                        <span class="cardsaved"><i class="fa fa-mobile"></i></span>
+                                        <div class="details_method">
+                                            <span class="title">KiiPay Wallet</span>
+                                            <span class="subtitle">Use your wallet balance</span>
+                                        </div>
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="text-center clearfix">
+                        <hr />
+                        <button type="button" id="continuePayment" class="btn btn-primary btn-lg mb30" onclick="submit()">Continue <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                        <div class="clearfix mb20"></div>
+                        <a asp-action="CashPickUpSummary" asp-route-transactionId="@Model.TransactionId"><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript">
+        $("#ErrorMessage").text('@ViewBag.ErrorMessage');
+        
+        // Saved card selection handler
+        $(".saved-card-radio").on("change", function () {
+            var idx = $(this).data("index");
+            $(".saved-card-cvv").hide();
+            if (this.checked) {
+                $('.saved-card-cvv[data-index="' + idx + '"]').slideDown();
+                // Uncheck standard payment mode radios
+                $("input[name='SenderPaymentMode']").prop("checked", false);
+            }
+        });
+
+        // Standard payment mode selection handler
+        $("input[name='SenderPaymentMode']").on("change", function () {
+            // Uncheck all saved card radios
+            $(".saved-card-radio").prop("checked", false);
+            $(".saved-card-cvv").hide();
+        });
+
+        // Form submission function (matching legacy behavior)
+        function submit() {
+            var id = "";
+            
+            // Check saved cards first
+            $(".saved-card-radio").each(function () {
+                if ($(this)[0].checked == true) {
+                    id = $(this)[0].id;
+                    return false; // break
+                }
+            });
+
+            // If no saved card, check standard payment modes
+            if (!id) {
+                $("input[name='SenderPaymentMode']").each(function () {
+                    if ($(this)[0].checked == true) {
+                        id = $(this)[0].id;
+                        return false; // break
+                    }
+                });
+            }
+
+            // Validate selection
+            if (!id) {
+                $("#ErrorMessage").text("Please select a payment method to continue.");
+                return;
+            }
+
+            // Set the SenderPaymentMode value based on selection
+            // PaymentMode enum: Card=0, BankAccount=1, MobileWallet=2
+            if (id > 0) {
+                // Saved card selected - set to Card mode (0)
+                $("input[name='SenderPaymentMode'][value='0']").prop("checked", true);
+            } else {
+                // Standard payment mode selected
+                switch (id) {
+                    case "CreditDebitCard":
+                        $("input[name='SenderPaymentMode'][value='0']").prop("checked", true);
+                        break;
+                    case "MoneyFexBankAccount":
+                        $("input[name='SenderPaymentMode'][value='1']").prop("checked", true);
+                        break;
+                    case "KiiPayWallet":
+                        $("input[name='SenderPaymentMode'][value='2']").prop("checked", true);
+                        break;
+                }
+            }
+
+            // Show loader and submit
+            if ($("#loader").length) {
+                $("#loader").show();
+            }
+            
+            $("#paymentMethodForm")[0].submit();
+        }
+    </script>
+}
+

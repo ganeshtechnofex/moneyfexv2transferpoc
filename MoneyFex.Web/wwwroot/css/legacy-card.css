@@ -1,0 +1,262 @@
+ 
+
+ .Wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Base {
+  background: #ccc;
+  height: 370px;
+  width: 100%;
+  border-radius: 15px;
+}
+
+.Inner-wrap {
+  background-color: #0c0014;
+background-image: url("../images/e-card.png");
+  background-size: auto 147%;
+  background-position: center;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  border-radius: 13px;
+  padding: 20px 40px;
+  box-sizing: border-box;
+  color: #fff;
+}
+
+.Wrap p {
+  margin: 0;
+  font-size: 2em;
+}
+
+/* Controls top right logo */
+
+.Logo {
+  position: absolute;
+  height: 80px;
+  width: 80px;
+  right: 0;
+  top: 0;
+  padding: inherit;
+  fill: #117aca;
+}
+
+.Wrap .logo {
+    top: 10%;
+    overflow: hidden;
+    width: 80px;
+    height: 100px;
+    right: 5%;
+    position: absolute;
+}
+.Wrap .logo img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+}
+/* Controls chip icon */
+
+.Chip {
+  height: 55px;
+  margin: 100px 0 25px 0;
+  float: left;
+}
+
+.gold path{
+  fill: url(#gold-gradient);
+}
+
+svg {
+  display: block;
+}
+
+/* Controls name size */
+
+.Logo-name {
+  margin-left: 0;
+  color: #fff;
+  font-size: 30px;
+  /* font-family: lucida calligraphy; */
+  /* font-style: italic; */
+  filter: drop-shadow(2px 2px #333);
+}
+
+.Card-number p {
+  text-align: center;
+}
+
+.Card-number {
+  margin-top: 87px;
+  display: flex;
+  margin-left: 18px;
+  font-size: 20px;
+  float: left;
+  justify-content: center;
+  
+  font-weight: bolder;
+  
+}
+
+.Wrap ul {
+  padding: 0;
+}
+
+.Wrap ul li {
+  list-style: none;
+  position: relative;
+  filter: drop-shadow(2px 2px #333);
+  float: left;
+  margin: 0px 10px;
+  font-size: 2.2em;
+  background: -webkit-linear-gradient(top, #8f6B29, #FDE08D, #DF9F28);
+  background: linear-gradient(top, #8f6B29, #FDE08D, #DF9F28);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#first-li {
+  margin-left: 0;
+}
+
+#last-li {
+  margin-right: 0;
+}
+
+.Expire {
+  font-size: .75em;
+  text-align: center;
+}
+
+.Expire h4 {
+  font-weight: 400;
+  color: #aaa;
+  margin: 0;
+/*   word-spacing: 9999999px; */
+  text-transform: uppercase;
+}
+
+.Expire p {
+  font-size: 1.55em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.Name h3 {
+  position: absolute;
+  bottom: 30px;
+  filter: drop-shadow(2px 2px #333);
+  
+  font-weight: 600;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.9);
+  /* background: -webkit-linear-gradient(transparent, transparent),               -webkit-linear-gradient(top, rgba(213,173,109,1) 0%, rgba(213,173,109,1) 26%, rgba(226,186,120,1) 35%, rgba(163,126,67,1) 45%, rgba(145,112,59,1) 61%, rgba(213,173,109,1) 100%);
+  background: -o-linear-gradient(transparent, transparent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; */
+  background: -webkit-linear-gradient(top, #8f6B29, #FDE08D, #DF9F28);
+  background: linear-gradient(top, #8f6B29, #FDE08D, #DF9F28);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.Name h3 span {
+    display: block;
+    font-size: 22px;
+}
+.Visa {
+  width: 160px;
+  position: absolute;
+  bottom: 29px;
+  right: 5%;
+  /* padding: inherit; */
+}
+
+@media (min-width: 320px) and (max-width: 480px) {
+  .Inner-wrap
+  {
+        padding: 11px 20px;
+  }
+  .Wrap ul li
+  {
+        font-size: 28px;
+    font-weight: 600;
+  }
+  .Chip {
+    height: 50px;
+}
+.Name h3
+{
+  font-size: 19px;
+  font-weight: 600;
+}
+.Visa {
+    width: 130px;
+}
+
+.Card-number {
+    margin-top: 101px;
+    }
+
+}
+ 
+
+
+
+ @media (max-width: 600px) and (min-width: 320px) {
+    .Inner-wrap
+  {
+        padding: 11px 20px;
+  }
+
+  .Base {
+   height: 250px;
+  }
+
+
+
+
+  .Wrap ul li
+  {
+        font-size: 19px;
+        font-weight: 600;
+        margin: 0 5px;
+  }
+  .Chip {
+    height: 26px;
+    margin: 59px 0 0;
+}
+.Name h3
+{
+  font-size: 15px;
+  font-weight: 600;
+}
+.Wrap .logo
+{
+  top: 24%;
+}
+.Name h3 span {
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+.Visa {
+    width: 108px;
+}
+
+.Card-number {
+    margin-top: 60px;
+    }
+
+}
+
+
+@media (min-width: 768px){
+.modal-card {
+    width: 680px;
+    margin: 30px auto;
+}
+
+}
+
+ 

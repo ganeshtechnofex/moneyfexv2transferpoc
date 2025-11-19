@@ -1,0 +1,196 @@
+@model MoneyFex.Web.ViewModels.TransferSummaryViewModel
+@{
+    ViewData["Title"] = "Summary";
+    Layout = "_Layout";
+}
+@using (Html.BeginForm())
+{
+    <div class="real_form pattern2 pdt40 ">
+        <div class="container">
+            <div class="row">
+                <!--  -->
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="flag-icon flag-icon-@Model.ReceivingCountryFlag"></i> @Model.ReceivingCurrencyCode @Model.TransferMethod </span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a href="@Url.Action("Index","TransferMoneyNow")">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="fa fa-money"></i> Amount @Model.SendingCurrencyCode @Model.TotalSendingAmount </span>
+                                    </div>
+
+                                    <div class="col-xs-2">
+                                        <a href="@Url.Action("Index","TransferMoneyNow")">Edit</a>
+                                    </div>
+
+                                </div>
+
+                            </li>
+
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="fa fa-user"></i> @Model.ReceiverFullName </span>
+                                    </div>
+
+                                    <div class="col-xs-2">
+                                        <a href="@Url.Action("AccountDetails","KiiBankTransfer")">Edit</a>
+                                    </div>
+
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        @*<a href="">Edit</a>*@
+                                    </div> 
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!--  -->
+                <!--  -->
+                <!-- <div class="col-lg-6 col-lg-offset-3 col-md-6 col-md-offset-3 "> -->
+                <div class="col-lg-6">
+                    <div class="login_signup   clearfix text-center">
+                        <h3 class="text-left">Payment Summary</h3>
+                        <hr>
+                        <div class="text-left">
+                            <!--  -->
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <label> Amount</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <div class="form-control form-text">
+                                        @Model.SendingCurrencySymbol  @Model.SendingAmount @Model.SendingCurrencyCode
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                            <!--  -->
+                            <!--  -->
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <label>Fee</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <div class="form-control form-text">
+                                        @Model.SendingCurrencySymbol  @Model.Fee @Model.SendingCurrencyCode
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                            <!--  -->
+                            <!--  -->
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <label>You'll Pay</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <div class="form-control form-text">
+                                        @Model.SendingCurrencySymbol @Model.TotalSendingAmount @Model.SendingCurrencyCode
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                            <!--  -->
+                            <!--  -->
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <label> @Model.ReceiverFirstName will Receive</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <div class="form-group text-left">
+                                    <div class="form-control form-text">
+                                        @Model.ReceivingCurrencySymbol  @Model.ReceivingAmount @Model.ReceivingCurrencyCode
+                                    </div>
+                                </div>
+                            </div>
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="text-danger">
+                                    @Html.ValidationSummary(false)
+                                </div>
+                            }
+                            <div class="clearfix"></div>
+                            <!--  -->
+                        </div>
+                        <hr>
+                        <h4 class="text-left mt30 text-bold ">
+                            <a>Please note : </a>By completing this transaction you acknowledge
+                            and adhere
+                            to our T&C that you agreed upon when signing up to MoneyFex.
+                            The T&C can also be found <a target="_blank"  rel="noopener" href="/QuickLink/SenderTermsAndConditions"> Here.</a> Your card will be immediately debited on completion of this transaction.
+                        </h4>
+                        @*<h4 class="text-center mt30 text-bold ">For more information, please read our  <a target="_blank"  rel="noopener" href="/QuickLink/SenderTermsAndConditions"> Agreement</a></h4>*@
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="text-center   clearfix">
+                        <hr>
+
+                        <button type="submit" class="btn btn-primary btn-lg   " id="submit">Send Money Now @*<i class="fa fa-paper-plane" aria-hidden="true"></i>*@</button>
+                        <div class="clearfix mb30"> </div>
+                        <a href="@Url.Action("ValidateAccount", "KiiBankTransfer") " class=" "><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back </a>
+                    </div>
+                    <!-- </div> -->
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        $("#submit").click(function () {
+
+            $("#loader").show();
+            $("form").submit();
+        })
+
+    </script>
+}
+

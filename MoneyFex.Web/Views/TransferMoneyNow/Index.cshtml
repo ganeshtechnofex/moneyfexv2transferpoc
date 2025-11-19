@@ -1,0 +1,524 @@
+@using System.Linq
+@model MoneyFex.Web.ViewModels.RecentTransferAndRecipientViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Transfer Money Now";
+
+    var receivingCountries = (ViewBag.ReceivingCountries as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>()).ToList();
+    var sendingCountries = ViewBag.SendingCountries as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    string sendingCountry = ViewBag.SendingCountry ?? "GB";
+    string receivingCountry = ViewBag.ReceivingCountry ?? "NG";
+    string sendingCurrency = ViewBag.SendingCurrency ?? "GBP";
+    string receivingCurrency = ViewBag.ReceivingCurrency ?? "NGN";
+    string countryNameWithCur = ViewBag.CountryNameWithCur ?? $"{receivingCurrency} &nbsp;&nbsp; {ViewBag.ReceivingCountryName ?? "Nigeria"}";
+
+    var meterAmount = Model?.SenderMonthlyTransaction?.SenderMonthlyTransactionMeterBalance ?? 0m;
+    var meterParts = meterAmount.ToString("0.00").Split('.');
+    string meterCurrency = Model?.SenderMonthlyTransaction?.SenderCurrencySymbol ?? sendingCurrency;
+}
+
+<section class="dashboard transfer-now-legacy">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 offset-lg-4">
+                <div class="wallet-balance text-right mb30">
+                    <h5>Monthly Transaction Meter</h5>
+                    <h1 class="text-primary">
+                        @meterCurrency@meterParts[0].<small class="text-primary">@meterParts[1]</small>
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="dashboard_body legacy-panel mb10">
+                    <h3 class="mb20">Transfer Money</h3>
+
+                    <div class="exchange-rate-wraper-new hidden-xs hidden-sm">
+                        <h2>
+                            1&nbsp;<span data-outbound-currency="@sendingCurrency" id="SendingCurrency">@sendingCurrency</span>&nbsp;=&nbsp;
+                            <span name="ExchangeRate" id="ExchangeRate">0.00</span>&nbsp;
+                            <span class="exchange-rate" data-inbound-currency="@receivingCurrency" id="ReceivingCurrency">@receivingCurrency</span>
+                            <a id="IsIntroductoryRateDesktop" href="javascript:void(0);" data-bs-toggle="tooltip" title="Rate details">
+                                <i class="fa fa-question"></i>
+                            </a>
+                        </h2>
+                        <p id="FeeDesktop">
+                            Fee:
+                            <span name="SendingCurrencySymbol">@sendingCurrency</span>
+                            <span name="Fee" id="Fee">0.00</span>
+                        </p>
+                    </div>
+
+                    <div class="exchange-rate-wraper-new hidden-lg hidden-md">
+                        <h2 style="font-size:18px">
+                            1&nbsp;<span data-outbound-currency="@sendingCurrency" id="SendingCurrencySmall">@sendingCurrency</span>&nbsp;=&nbsp;
+                            <span name="ExchangeRate" id="ExchangeRateSmall">0.00</span>&nbsp;
+                            <span class="exchange-rate" data-inbound-currency="@receivingCurrency" id="ReceivingCurrencySmall">@receivingCurrency</span>
+                            <a id="IsIntroductoryRateMobile" href="javascript:void(0);" data-bs-toggle="tooltip" title="Rate details">
+                                <i class="fa fa-question"></i>
+                            </a>
+                        </h2>
+                        <p id="FeeMobile">
+                            Fee:
+                            <span name="SendingCurrencySymbol">@sendingCurrency</span>
+                            <span name="Fee" id="FeeSmall">0.00</span>
+                        </p>
+                    </div>
+
+                    <div class="exchange-rate-wraper-new" id="ValidationResultdiv" style="background-color:white;display:none">
+                        <p class="text-danger" id="ValidationResult"></p>
+                    </div>
+
+                    <form id="transferCalculator" autocomplete="off">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mf-form-calculator">
+                            <span class="mf-calculator-label">You send</span>
+                            <input type="number" id="SendingAmount" class="primary-placeholder" required placeholder="0.00" name="SendingAmount" onkeyup="GetPaymentSummary(false)" step=".01" min="0">
+                            <div class="mf-currency text-right dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="true">
+                                <span class="mf-currency-select"
+                                      data-currency="@sendingCurrency"
+                                      data-country-code="@sendingCountry"
+                                      id="sendingCountry">
+                                    @sendingCurrency &nbsp;&nbsp; from @(sendingCountries.FirstOrDefault(c => c.CountryCode == sendingCountry)?.CountryName ?? "United Kingdom")
+                                </span>
+                                <div class="arrow-wrapper"><span class="select-arrow"></span></div>
+                            </div>
+                            <div class="currency-dropdown dropdown-menu closed">
+                                <div class="currency-search">
+                                    <div class="search-input">
+                                        <input type="search" class="input-currency-search" id="searchCurrency" placeholder="Type a currency / country">
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <ul id="currencylist">
+                                    @foreach (var item in sendingCountries)
+                                    {
+                                        <li class="currency-dropdown_option" onclick="OnSendingCountryChange('@item.CountryCode', '@item.Currency', '@item.CountryName')">
+                                            <div class="currency-dropdown_option_flag flag-icon flag-icon-@item.CountryCode.ToLower()"></div>
+                                            <span class="currency-dropdown_option_text">@item.Currency &nbsp;&nbsp; from @item.CountryName</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mf-form-calculator">
+                            <span class="mf-calculator-label">They receive</span>
+                            <input type="number" class="primary-placeholder" id="ReceivingAmount" placeholder="0.00" name="ReceivingAmount" onkeyup="GetPaymentSummary(true)" step=".01" min="0">
+
+                            <div class="mf-currency text-right dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="true">
+                                <span class="mf-currency-select"
+                                      data-currency="@receivingCurrency"
+                                      data-country-code="@receivingCountry"
+                                      id="receivingCountry">
+                                    @Html.Raw(countryNameWithCur)
+                                </span>
+                                <div class="arrow-wrapper"><span class="select-arrow"></span></div>
+                            </div>
+                            <div class="currency-dropdown dropdown-menu closed">
+                                <div class="currency-search">
+                                    <div class="search-input">
+                                        <input type="search" class="input-currency-search" id="searchCurrency1" placeholder="Type a currency / country">
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <ul id="currencylist1">
+                                    @foreach (var item in receivingCountries)
+                                    {
+                                        <li class="currency-dropdown_option" onclick="OnReceivingCountryChange('@item.CountryCode', '@item.Currency', '@item.CountryName')">
+                                            <div class="currency-dropdown_option_flag flag-icon flag-icon-@item.CountryCode.ToLower()"></div>
+                                            <span class="currency-dropdown_option_text">@item.Currency &nbsp;&nbsp; @item.CountryName</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="transfer-type mt20">
+                            <h4 class="text-left">Transfer to a</h4>
+                            <div class="display-inline mb10 mt10" id="transferMethod">
+                                <label class="radio-box">
+                                    <img src="~/images/icons/bank.svg" width="48" alt="Bank account" />
+                                    <h4 class="mb15 text-center">Bank Account</h4>
+                                    <input type="radio" name="radio" value="4" checked onchange="GetPaymentSummary(false)">
+                                    <span class="checkmark"></span>
+                                </label>
+                                <label class="radio-box">
+                                    <img src="~/images/icons/mobile-money.svg" width="48" alt="Mobile wallet" />
+                                    <h4 class="mb15 text-center">Mobile Wallet</h4>
+                                    <input type="radio" name="radio" value="3" onchange="GetPaymentSummary(false)">
+                                    <span class="checkmark"></span>
+                                </label>
+                                <label class="radio-box">
+                                    <img src="~/images/icons/cash-pickup.svg" width="48" alt="Cash pickup" />
+                                    <h4 class="mb15 text-center">Cash Pickup</h4>
+                                    <input type="radio" name="radio" value="1" onchange="GetPaymentSummary(false)">
+                                    <span class="checkmark"></span>
+                                </label>
+                                <label class="radio-box">
+                                    <img src="~/images/icons/kiipay.svg" width="48" alt="KiiBank" />
+                                    <h4 class="mb15 text-center">KiiBank</h4>
+                                    <input type="radio" name="radio" value="2" onchange="GetPaymentSummary(false)">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+                            <div class="error-alert hidden-lg">
+                                <span class="text-danger text-center" id="transferMethodvalidationMsg"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-home mb30">
+                            <button type="button" onclick="TransferNow()" class="btn-transfer" id="TransferNow">Transfer</button>
+                            <div class="clearfix"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="asidebox">
+                    <div class="title">
+                        <h3>Recent Transfers</h3>
+                        <hr />
+                    </div>
+                    <ul class="recent-t">
+                        @if (Model?.RecentTransfer?.Any() == true)
+                        {
+                            foreach (var item in Model.RecentTransfer)
+                            {
+                                <li>
+                                    <div class="card-r-t-body">
+                                        <div class="icon">
+                                            @if (item.StatusName == "Completed" || item.StatusName == "Paid")
+                                            {
+                                                <i class="fa fa-check text-success"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fa fa-exclamation text-warning"></i>
+                                            }
+                                        </div>
+                                        <div class="right-details">
+                                            <h4 class="text-secondary">@item.ReceiverName</h4>
+                                            <span class="text-primary status">
+                                                @item.ReceivingCurrency @item.ReceivingAmount.ToString("N2") -
+                                                <span class="@(item.StatusName is "Completed" or "Paid" ? "text-success" : "text-warning")">@item.StatusName</span>
+                                            </span>
+                                            <span class="date">@item.Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li>
+                                <div class="card-r-t-body text-center">
+                                    <label>No Transactions</label>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                    <div class="viewall">
+                        <a asp-controller="TransactionHistory" asp-action="Index">View All</a>
+                    </div>
+                </div>
+
+                <div class="asidebox mt10">
+                    <div class="title">
+                        <h3>My Recipients</h3>
+                        <hr />
+                    </div>
+                    <ul class="recent-t">
+                        @if (Model?.Recipients?.Any() == true)
+                        {
+                            foreach (var recipient in Model.Recipients.Take(10))
+                            {
+                                var safeCountry = (recipient.Country ?? string.Empty).Replace("'", "\\'");
+                                var safeCurrency = (recipient.Currency ?? string.Empty).Replace("'", "\\'");
+                                <li>
+                                    <div class="card-r-t-body">
+                                        <div class="first-character">@recipient.ReceiverFirstLetter</div>
+                                        <div class="right-details">
+                                            <h4 class="text-secondary">@recipient.ReceiverName</h4>
+                                            <span class="ac-details text-uppercase">
+                                                <i class="flag-icon flag-icon-@recipient.Country?.ToLower()"></i>
+                                                @recipient.Currency &nbsp; @recipient.ServiceName
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-r-t-footer">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="prefillRecipient('@safeCountry', '@safeCurrency')">Send</button>
+                                    </div>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li>
+                                <div class="card-r-t-body text-center">
+                                    <label>No Recipients</label>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    private static string GetServiceLabel(int type)
+    {
+        return type switch
+        {
+            1 => "Mobile wallet",
+            2 => "Bank deposit",
+            3 => "Cash pickup",
+            5 => "Cash pickup",
+            _ => "Transfer"
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .transfer-now-legacy .legacy-panel {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,.05);
+        }
+
+        .currency-dropdown {
+            display: none;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .currency-dropdown.show {
+            display: block;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/moneyfex-home.js" asp-append-version="true"></script>
+    <script src="~/js/legacy-home.js" asp-append-version="true"></script>
+    <script>
+        (function initTransferMoneyNowCalculator() {
+            function ready() {
+                if (typeof jQuery === 'undefined' || typeof GetPaymentSummary === 'undefined') {
+                    return setTimeout(ready, 50);
+                }
+
+                var $ = jQuery;
+                window.TransferMoneyNowState = {
+                    selectedTransferMethod: $('input[name="radio"]:checked').val(),
+                    selectedSendingCountry: '@sendingCountry',
+                    selectedReceivingCountry: '@receivingCountry',
+                    selectedSendingCurrency: '@sendingCurrency',
+                    selectedReceivingCurrency: '@receivingCurrency'
+                };
+
+                $('#transferMethod input[type="radio"]').on('change', function () {
+                    window.TransferMoneyNowState.selectedTransferMethod = $(this).val();
+                    GetPaymentSummary(false);
+                });
+
+                $('#SendingAmount').on('keyup', function () {
+                    GetPaymentSummary(false);
+                });
+
+                $('#ReceivingAmount').on('keyup', function () {
+                    GetPaymentSummary(true);
+                });
+
+                setTimeout(function () {
+                    GetPaymentSummary(false);
+                }, 200);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', ready);
+            } else {
+                ready();
+            }
+        })();
+    </script>
+    <script>
+        function TransferNow() {
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery not loaded');
+                return;
+            }
+
+            var $ = jQuery;
+
+            if (typeof validationResult !== 'undefined' &&
+                validationResult &&
+                validationResult.data === false) {
+                $("#ValidationResult").text(validationResult.message || "Invalid amount");
+                $("#ValidationResultdiv").show();
+                return;
+            }
+
+            $("#ValidationResultdiv").hide();
+
+            var sendingAmount = parseFloat($("#SendingAmount").val()) || 0;
+            if (sendingAmount <= 0) {
+                $("#ValidationResult").text("Please enter an amount to send.");
+                $("#ValidationResultdiv").show();
+                return;
+            }
+            if (sendingAmount > 50000) {
+                $("#ValidationResult").text("Please enter send amount less than or equal to GBP 50,000.");
+                $("#ValidationResultdiv").show();
+                return;
+            }
+
+            var receivingAmount = parseFloat($("#ReceivingAmount").val()) || 0;
+            var sendingCurrency = $("#sendingCountry").attr('data-currency') || 'GBP';
+            var receivingCurrency = $("#receivingCountry").attr('data-currency') || 'NGN';
+            var sendingCountry = $("#sendingCountry").attr('data-country-code')
+                || (window.TransferMoneyNowState ? window.TransferMoneyNowState.selectedSendingCountry : 'GB');
+            var receivingCountry = $("#receivingCountry").attr('data-country-code')
+                || (window.TransferMoneyNowState ? window.TransferMoneyNowState.selectedReceivingCountry : 'NG');
+            var transferMethod = parseInt($("#transferMethod input[type='radio']:checked").val(), 10) || 4;
+
+            // Direct redirect for Mobile Wallet (value 3)
+            if (transferMethod === 3) {
+                var mobileUrl = '/MobileMoneyTransfer?'
+                    + 'CountryCode=' + encodeURIComponent(receivingCountry)
+                    + '&SendingAmount=' + encodeURIComponent(sendingAmount)
+                    + '&ReceivingAmount=' + encodeURIComponent(receivingAmount)
+                    + '&SendingCurrency=' + encodeURIComponent(sendingCurrency)
+                    + '&ReceivingCurrency=' + encodeURIComponent(receivingCurrency)
+                    + '&SendingCountry=' + encodeURIComponent(sendingCountry)
+                    + '&ReceivingCountry=' + encodeURIComponent(receivingCountry);
+                window.location.href = mobileUrl;
+                return;
+            }
+
+            // Direct redirect for Cash Pickup (value 1) - bypass validation API
+            if (transferMethod === 1) {
+                var cashPickupUrl = '/SenderCashPickUp/Index?'
+                    + 'SendingAmount=' + encodeURIComponent(sendingAmount)
+                    + '&ReceivingAmount=' + encodeURIComponent(receivingAmount)
+                    + '&SendingCurrency=' + encodeURIComponent(sendingCurrency)
+                    + '&ReceivingCurrency=' + encodeURIComponent(receivingCurrency)
+                    + '&SendingCountry=' + encodeURIComponent(sendingCountry)
+                    + '&ReceivingCountry=' + encodeURIComponent(receivingCountry)
+                    + '&CountryCode=' + encodeURIComponent(receivingCountry);
+                window.location.href = cashPickupUrl;
+                return;
+            }
+
+            // Direct redirect for Bank Account (value 4) - bypass validation API
+            if (transferMethod === 4) {
+                var bankDepositUrl = '/SenderBankAccountDeposit/Index?'
+                    + 'SendingAmount=' + encodeURIComponent(sendingAmount)
+                    + '&ReceivingAmount=' + encodeURIComponent(receivingAmount)
+                    + '&SendingCurrency=' + encodeURIComponent(sendingCurrency)
+                    + '&ReceivingCurrency=' + encodeURIComponent(receivingCurrency)
+                    + '&SendingCountry=' + encodeURIComponent(sendingCountry)
+                    + '&ReceivingCountry=' + encodeURIComponent(receivingCountry);
+                window.location.href = bankDepositUrl;
+                return;
+            }
+
+            // Direct redirect for KiiBank (value 2) - bypass validation API
+            if (transferMethod === 2) {
+                var kiiBankUrl = '/KiiBankTransfer/AccountDetails?'
+                    + 'SendingAmount=' + encodeURIComponent(sendingAmount)
+                    + '&ReceivingAmount=' + encodeURIComponent(receivingAmount)
+                    + '&SendingCurrency=' + encodeURIComponent(sendingCurrency)
+                    + '&ReceivingCurrency=' + encodeURIComponent(receivingCurrency)
+                    + '&SendingCountry=' + encodeURIComponent(sendingCountry)
+                    + '&ReceivingCountry=' + encodeURIComponent(receivingCountry);
+                window.location.href = kiiBankUrl;
+                return;
+            }
+
+            var payload = {
+                SendingAmount: sendingAmount,
+                ReceivingAmount: receivingAmount,
+                SendingCurrency: sendingCurrency,
+                ReceivingCurrency: receivingCurrency,
+                SendingCountry: sendingCountry,
+                ReceivingCountry: receivingCountry,
+                IsReceivingAmount: false,
+                TransferMethod: transferMethod
+            };
+
+            fetch('/TransferMoneyNow/ValidateTransfer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function (result) {
+                    if (result.Status === 1) {
+                        if (result.TransferMethod === 'MobileWallet') {
+                            var mobileUrl = '/MobileMoneyTransfer?'
+                                + 'CountryCode=' + encodeURIComponent(receivingCountry)
+                                + '&SendingAmount=' + encodeURIComponent(sendingAmount)
+                                + '&ReceivingAmount=' + encodeURIComponent(receivingAmount)
+                                + '&SendingCurrency=' + encodeURIComponent(sendingCurrency)
+                                + '&ReceivingCurrency=' + encodeURIComponent(receivingCurrency)
+                                + '&SendingCountry=' + encodeURIComponent(sendingCountry)
+                                + '&ReceivingCountry=' + encodeURIComponent(receivingCountry);
+                            window.location.href = mobileUrl;
+                        } else if (result.TransferMethod === 'BankDeposit') {
+                            // Redirect to SenderBankAccountDeposit/Index for bank deposit
+                            var bankDepositUrl = '/SenderBankAccountDeposit/Index?'
+                                + 'SendingAmount=' + encodeURIComponent(sendingAmount)
+                                + '&ReceivingAmount=' + encodeURIComponent(receivingAmount)
+                                + '&SendingCurrency=' + encodeURIComponent(sendingCurrency)
+                                + '&ReceivingCurrency=' + encodeURIComponent(receivingCurrency)
+                                + '&SendingCountry=' + encodeURIComponent(sendingCountry)
+                                + '&ReceivingCountry=' + encodeURIComponent(receivingCountry);
+                            window.location.href = bankDepositUrl;
+                        } else {
+                            var url = '/SendMoney/' + result.TransferMethod
+                                + '?amount=' + encodeURIComponent(sendingAmount)
+                                + '&sendingCountry=' + encodeURIComponent(sendingCountry)
+                                + '&receivingCountry=' + encodeURIComponent(receivingCountry);
+                            window.location.href = url;
+                        }
+                    } else {
+                        $("#ValidationResult").text(result.Message || "Validation failed. Please try again.");
+                        $("#ValidationResultdiv").show();
+                    }
+                })
+                .catch(function () {
+                    $("#ValidationResult").text("Unable to validate transfer. Please try again.");
+                    $("#ValidationResultdiv").show();
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var transferButton = document.getElementById('TransferNow');
+            if (transferButton) {
+                transferButton.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    TransferNow();
+                });
+            }
+        });
+    </script>
+}

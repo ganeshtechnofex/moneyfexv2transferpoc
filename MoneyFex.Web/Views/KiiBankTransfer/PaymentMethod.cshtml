@@ -1,0 +1,288 @@
+@model MoneyFex.Web.ViewModels.PaymentMethodViewModel
+@{
+    ViewData["Title"] = "Payment Method";
+    Layout = "_Layout";
+    
+    string[] amountSplited = Model.TotalAmount.ToString("0.00").Split('.');
+}
+@using (Html.BeginForm())
+{
+    <div class="real_form pattern2 pdt40 ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="login_signup mb20">
+                        <ul class="wiz">
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="flag-icon flag-icon-@ViewBag.ReceivingCountry"></i> @ViewBag.ReceivingCountryCurrency @ViewBag.TransferMethod </span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a href="@Url.Action("Index","TransferMoneyNow")">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="fa fa-money"></i> Amount @ViewBag.SendingCountryCurrency @ViewBag.SendingAmount </span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a href="@Url.Action("Index","TransferMoneyNow")">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon active">
+                                            <i class="fa fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span class=" "><i class="fa fa-user"></i> @ViewBag.ReceiverName </span>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <a href="@Url.Action("AccountDetails","KiiBankTransfer")">Edit</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="wiz-list row">
+                                    <div class="col-xs-2">
+                                        <div class="icon last">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="login_signup mb50 clearfix text-center">
+                        <!-- Available balance -->
+                        <div class="text-center mb30 mt20">
+                            <div class="text-right wallet-balance card-body">
+                                <h5>Amount including fee</h5>
+                                <h1 class="text-primary">@Model.SendingCurrencySymbol<span class="amountheader">@amountSplited[0]</span>.<small class="text-primary">@amountSplited[1]</small></h1>
+                            </div>
+                        </div>
+                        <!-- Available balance -->
+                        <div class="clearfix"></div>
+                        @Html.HiddenFor(model => model.TotalAmount)
+                        @Html.HiddenFor(model => model.SendingCurrencySymbol)
+                        @Html.HiddenFor(model => model.HasKiiPayWallet)
+                        <ul class="paymentmethod-list mt20 mb20">
+                            <h4 class="text-left">
+                                @if (!ViewData.ModelState.IsValid)
+                                {
+                                    <div class="text-danger">
+                                        @Html.ValidationSummary(false)
+                                    </div>
+                                }
+                                <span id="ErrorMesage" style="color:red;">@ViewBag.ErrorMessage</span>
+                            </h4>
+                            <h4 class="text-left">How do you want to pay ?</h4>
+                            @{
+                                int index = 0;
+                            }
+                            @foreach (var item in Model.CardDetails)
+                            {
+                                <li>
+                                    <label class="clearfix">
+                                        @Html.RadioButtonFor(model => Model.CardDetails[index].IsChecked, true, new { @type = "radio", @id = item.CardId, @onchange = "RadioChange();" })
+                                        <span class="cardsaved">
+                                            @if (item.CreditDebitCardType == MoneyFex.Web.ViewModels.CreditDebitCardType.VisaCard)
+                                            {
+                                                <img src="~/images/icon/card/visa.png" alt="Visa">
+                                            }
+                                            else
+                                            {
+                                                <img src="~/images/icon/card/master-card.png" alt="Mastercard">
+                                            }
+                                        </span>
+                                        <div class="details_method">
+                                            <span class="title">Saved Credit/Debit Card</span> 
+                                            <span class="subtitle"><a href="#">@item.CardNumber</a></span>
+                                            <span class="subtitle"><a href="#">Fee: @ViewBag.SendingCountryCurrency @ViewBag.CreditDebitFee</a></span>
+                                        </div>
+                                    </label>
+                                    @Html.HiddenFor(model => Model.CardDetails[index].CardId, new { @id = "CardId" })
+                                    @Html.HiddenFor(model => Model.CardDetails[index].CreditDebitCardType)
+                                    @Html.HiddenFor(model => Model.CardDetails[index].CardNumber)
+                                    <div class="row" id="CVVDiv" style="display:none;">
+                                        <div class="col-md-offset-3 col-md-6">
+                                            <div class="form-group">
+                                                @Html.PasswordFor(Model => Model.CardDetails[index].SecurityCode,
+                                                    new { @class = "form-control form-control-md", @placeholder = "Enter CVV", @id = "SecurityCode" })
+                                            </div>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                        <div class="col-md-offset-3 col-md-6">
+                                            <div class="form-group">
+                                                <a class="btn btn-primary btn-md mb30" onclick="submitAndGoToSecureTradingpage()">Confirm and Pay Now <i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @{
+                                        index++;
+                                    }
+                                </li>
+                            }
+                            <li>
+                                <label class="clearfix">
+                                    @Html.RadioButtonFor(model => model.SenderPaymentMode, MoneyFex.Core.Entities.Enums.PaymentMode.Card, new { @onchange = "RadioChange();", id = "CreditDebitCard" })
+                                    <span class="cardsaved"><img src="~/images/credit-debit.jpg" alt="Credit/Debit Card"></span>
+                                    <div class="details_method">
+                                        <span class="title">Credit/Debit</span> 
+                                        <span class="subtitle"><a href="#">Card details required</a></span>
+                                        <span class="subtitle"><a href="#">Fee: @ViewBag.SendingCountryCurrency @ViewBag.CreditDebitFee</a></span>
+                                    </div>
+                                </label>
+                            </li>
+                            @if (Model.IsEnableVolumePayment == true)
+                            {
+                                <li>
+                                    <label class="clearfix">
+                                        @Html.RadioButtonFor(model => model.SenderPaymentMode, MoneyFex.Core.Entities.Enums.PaymentMode.BankAccount, new { @onchange = "RadioChange();", id = "DirectBankPayment" })
+                                        <span class="cardsaved"><img src="~/images/icon/svg/bank.svg" alt="Bank"></span>
+                                        <div class="details_method">
+                                            <span class="title">Direct Bank Payment</span>
+                                            <span class="subtitle"><a href="#">Fee: @ViewBag.SendingCountryCurrency @ViewBag.CreditDebitFee</a></span>
+                                        </div>
+                                    </label>
+                                </li>
+                            }
+                            @if (Model.HasKiiPayWallet)
+                            {
+                                <li>
+                                    <label class="clearfix">
+                                        @Html.RadioButtonFor(model => model.SenderPaymentMode, MoneyFex.Core.Entities.Enums.PaymentMode.MobileWallet, new { @onchange = "RadioChange();" })
+                                        <span class="cardsaved hidden-xs"><img src="~/images/icon/svg/kiipay.svg" alt="KiiPay"></span>
+                                        <div class="details_method">
+                                            <span class="title">KiiPay Wallet Balance</span> 
+                                            <span class="subtitle"><a href="#">Balance @Model.SendingCurrencySymbol@Model.KiipayWalletBalance</a></span>
+                                            @Html.HiddenFor(model => model.KiipayWalletBalance)
+                                            <span class="subtitle"><a href="#">Fee: @ViewBag.SendingCountryCurrency @ViewBag.Fee</a></span>
+                                        </div>
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="text-center clearfix">
+                        <hr>
+                        <a class="btn btn-primary btn-lg mb30" id="PayNow" onclick="submit()" style="display:none;">Pay Now <i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                        <a class="btn btn-primary btn-lg mb30" id="Continue" onclick="submit()">Continue <i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                        <!-- back btn -->
+                        <div class="clearfix">
+                            <center>
+                                <a href="@Url.Action("Summary", "KiiBankTransfer")" class=""><i class="fa fa-chevron-left" aria-hidden="true"></i> Go Back</a>
+                            </center>
+                        </div>
+                        <!-- back btn end-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts{
+    <script type="text/javascript">
+        $("#ErrorMesage").text('@ViewBag.ErrorMessage');
+        $("#PayNow").hide();
+        $("#Continue").show();
+        
+        function RadioChange() {
+            $("input[type=radio]").prop('checked', false);
+            event.target.checked = true;
+            
+            if (event.target.id > 0) {
+                $("02").show();
+                $("01").hide();
+                $("#PayNow").show();
+                $("#CVVDiv").show();
+                $("#Continue").hide();
+            } else {
+                $("01").show();
+                $("02").hide();
+                $("#PayNow").hide();
+                $("#Continue").show();
+                $("#CVVDiv").hide();
+            }
+        }
+        
+        function submitAndGoToSecureTradingpage() {
+            $("#loader").show();
+            
+            var paymentMethod = "";
+            $("input[type=radio]").each(function () {
+                if ($(this)[0].checked == true) {
+                    paymentMethod = $(this)[0].id;
+                    return;
+                };
+            });
+            
+            var SecurityCode = $("#SecurityCode").val();
+            if (SecurityCode == "" || SecurityCode == "undefined" || SecurityCode == null) {
+                $("#ErrorMesage").text("Enter CVV");
+                $("#loader").hide();
+                return;
+            }
+            
+            // For now, just submit the form
+            $("form")[0].submit();
+        }
+        
+        function submit() {
+            $("#loader").show();
+            var paymentMethod = "";
+            $("input[type=radio]").each(function () {
+                if ($(this)[0].checked == true) {
+                    paymentMethod = $(this)[0].id;
+                    return;
+                };
+            });
+
+            switch (paymentMethod) {
+                case "CreditDebitCard":
+                    $("[name=SenderPaymentMode]").val(0);
+                    break;
+                case "MoneyFexBankAccount":
+                    $("[name=SenderPaymentMode]").val(1);
+                    break;
+                case "DirectBankPayment":
+                    $("[name=SenderPaymentMode]").val(1);
+                    break;
+                default:
+            }
+
+            if (paymentMethod == "DirectBankPayment") {
+                window.location.href = "/Volume/Volume";
+            } else {
+                $("form")[0].submit();
+            }
+        }
+
+        var IsCreditDebitCard = '@Model.SenderPaymentMode';
+        if (IsCreditDebitCard == 'Card') {
+            $("#CreditDebitCard").attr("checked", true);
+        }
+    </script>
+}
+
