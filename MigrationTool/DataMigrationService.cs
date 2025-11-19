@@ -67,6 +67,7 @@ public class DataMigrationService
             await MigrateBankAccountDepositsAsync();
             await MigrateMobileMoneyTransfersAsync();
             await MigrateCashPickupsAsync();
+            await MigrateKiiBankTransfersAsync();
             await MigrateCardPaymentInformationAsync();
             await MigrateReinitializeTransactionsAsync();
 
@@ -1036,6 +1037,181 @@ public class DataMigrationService
         _logger.LogInfo($"Migrated {count} reinitialize transactions");
     }
 
+    private async Task MigrateKiiBankTransfersAsync()
+    {
+        _logger.LogInfo("Migrating KiiBank transfers...");
+
+        using var sourceConn = new SqlConnection(_sourceConnectionString);
+        await sourceConn.OpenAsync();
+
+        using var targetConn = new NpgsqlConnection(_targetConnectionString);
+        await targetConn.OpenAsync();
+
+        // Get valid staff IDs for foreign key validation
+        var validStaffIds = new HashSet<int>();
+        using (var staffCheckCmd = new NpgsqlCommand(@"SELECT ""Id"" FROM staff", targetConn))
+        using (var staffReader = await staffCheckCmd.ExecuteReaderAsync())
+        {
+            while (await staffReader.ReadAsync())
+            {
+                validStaffIds.Add(GetIntValue(staffReader["Id"]));
+            }
+        }
+
+        // Get valid sender IDs for foreign key validation
+        var validSenderIds = new HashSet<int>();
+        using (var senderCheckCmd = new NpgsqlCommand(@"SELECT ""Id"" FROM senders", targetConn))
+        using (var senderReader = await senderCheckCmd.ExecuteReaderAsync())
+        {
+            while (await senderReader.ReadAsync())
+            {
+                validSenderIds.Add(GetIntValue(senderReader["Id"]));
+            }
+        }
+
+        // Get valid bank IDs for foreign key validation
+        var validBankIds = new HashSet<int>();
+        using (var bankCheckCmd = new NpgsqlCommand(@"SELECT ""Id"" FROM banks", targetConn))
+        using (var bankReader = await bankCheckCmd.ExecuteReaderAsync())
+        {
+            while (await bankReader.ReadAsync())
+            {
+                validBankIds.Add(GetIntValue(bankReader["Id"]));
+            }
+        }
+
+        var selectCmd = new SqlCommand(@"
+            SELECT Id, ReceiptNo, TransactionDate, SenderId, SendingCountry, ReceivingCountry,
+                   SendingCurrency, ReceivingCurrency, SendingAmount, ReceivingAmount, Fee, TotalAmount,
+                   ExchangeRate, PaymentReference, SenderPaymentMode, Status, PayingStaffId, Apiservice,
+                   AccountNo, ReceiverName, TransactionReference, RecipientId,
+                   ReasonForTransfer, CardProcessorApi, IsFromMobile, IsComplianceNeededForTrans,
+                   IsComplianceApproved, ComplianceApprovedBy, ComplianceApprovedDate, UpdateByStaffId
+            FROM KiiBankTransfer", sourceConn);
+
+        using var reader = await selectCmd.ExecuteReaderAsync();
+        var transactionCount = 0;
+        var transferCount = 0;
+
+        while (await reader.ReadAsync())
+        {
+            // First, migrate as a transaction
+            var transactionId = await InsertTransactionAsync(
+                targetConn,
+                reader,
+                TransactionModule.Sender,
+                "ReceiptNo",
+                "SendingAmount",
+                "Fee",
+                "Status",
+                validStaffIds,
+                validSenderIds
+            );
+
+            if (transactionId == -1)
+            {
+                _logger.LogInfo($"Warning: Skipping KiiBank transfer {reader["Id"]} due to invalid sender ID");
+                continue;
+            }
+
+            transactionCount++;
+
+            // BankId doesn't exist in legacy table, set to NULL
+            int? bankId = null;
+
+            // Try to get AccountOwnerName and AccountHolderPhoneNo from RecipientId if available
+            // Note: These fields might not exist in the legacy table, so we'll set them to NULL if not found
+            string? accountOwnerName = null;
+            string? accountHolderPhoneNo = null;
+
+            try
+            {
+                var recipientId = GetIntValueOrNull(reader["RecipientId"]);
+                if (recipientId.HasValue)
+                {
+                    // Try to get recipient details from the new database
+                    using var recipientCmd = new NpgsqlCommand(@"
+                        SELECT ""FirstName"", ""LastName"", ""PhoneNumber""
+                        FROM recipients
+                        WHERE ""Id"" = @recipientId", targetConn);
+                    recipientCmd.Parameters.AddWithValue("recipientId", recipientId.Value);
+                    using var recipientReader = await recipientCmd.ExecuteReaderAsync();
+                    if (await recipientReader.ReadAsync())
+                    {
+                        var firstName = recipientReader["FirstName"]?.ToString() ?? "";
+                        var lastName = recipientReader["LastName"]?.ToString() ?? "";
+                        accountOwnerName = $"{firstName} {lastName}".Trim();
+                        accountHolderPhoneNo = recipientReader["PhoneNumber"]?.ToString();
+                    }
+                }
+            }
+            catch
+            {
+                // If RecipientId doesn't exist in the source table, that's fine
+            }
+
+            // Use ReceiverName as AccountOwnerName if AccountOwnerName is not available
+            if (string.IsNullOrEmpty(accountOwnerName))
+            {
+                accountOwnerName = reader["ReceiverName"]?.ToString();
+            }
+
+            var insertCmd = new NpgsqlCommand(@"
+                INSERT INTO kiibank_transfers (""TransactionId"", ""AccountNo"", ""ReceiverName"", 
+                                               ""AccountOwnerName"", ""AccountHolderPhoneNo"", ""BankId"", 
+                                               ""BankBranchId"", ""BankBranchCode"", ""TransactionReference"", 
+                                               ""CreatedAt"", ""UpdatedAt"")
+                VALUES (@transactionId, @accountNo, @receiverName, @accountOwnerName, @accountHolderPhoneNo, 
+                        @bankId, @bankBranchId, @bankBranchCode, @transactionReference, @createdAt, @updatedAt)
+                ON CONFLICT (""TransactionId"") DO UPDATE SET
+                    ""AccountNo"" = EXCLUDED.""AccountNo"",
+                    ""ReceiverName"" = EXCLUDED.""ReceiverName"",
+                    ""AccountOwnerName"" = EXCLUDED.""AccountOwnerName"",
+                    ""AccountHolderPhoneNo"" = EXCLUDED.""AccountHolderPhoneNo"",
+                    ""BankId"" = EXCLUDED.""BankId"",
+                    ""BankBranchId"" = EXCLUDED.""BankBranchId"",
+                    ""BankBranchCode"" = EXCLUDED.""BankBranchCode"",
+                    ""TransactionReference"" = EXCLUDED.""TransactionReference"",
+                    ""UpdatedAt"" = EXCLUDED.""UpdatedAt""", targetConn);
+
+            insertCmd.Parameters.AddWithValue("transactionId", transactionId);
+            insertCmd.Parameters.AddWithValue("accountNo", reader["AccountNo"]?.ToString() ?? (object)DBNull.Value);
+            insertCmd.Parameters.AddWithValue("receiverName", reader["ReceiverName"]?.ToString() ?? (object)DBNull.Value);
+            insertCmd.Parameters.AddWithValue("accountOwnerName", accountOwnerName ?? (object)DBNull.Value);
+            insertCmd.Parameters.AddWithValue("accountHolderPhoneNo", accountHolderPhoneNo ?? (object)DBNull.Value);
+            insertCmd.Parameters.AddWithValue("bankId", bankId.HasValue ? (object)bankId.Value : DBNull.Value);
+            
+            // Handle BankBranchId and BankBranchCode - these don't exist in legacy table, set to NULL
+            insertCmd.Parameters.AddWithValue("bankBranchId", DBNull.Value);
+            insertCmd.Parameters.AddWithValue("bankBranchCode", DBNull.Value);
+            insertCmd.Parameters.AddWithValue("transactionReference", reader["TransactionReference"]?.ToString() ?? (object)DBNull.Value);
+            
+            var transactionDate = reader["TransactionDate"] as DateTime? ?? DateTime.UtcNow;
+            insertCmd.Parameters.AddWithValue("createdAt", transactionDate);
+            insertCmd.Parameters.AddWithValue("updatedAt", transactionDate);
+
+            try
+            {
+                await insertCmd.ExecuteNonQueryAsync();
+                transferCount++;
+            }
+            catch (PostgresException ex) when (ex.SqlState == "23505")
+            {
+                // Duplicate key error - log and continue
+                _logger.LogInfo($"Warning: Duplicate KiiBank transfer for transaction ID {transactionId} detected, skipping duplicate record");
+                continue;
+            }
+            catch (PostgresException ex) when (ex.SqlState == "23503")
+            {
+                // Foreign key violation - log and continue
+                _logger.LogInfo($"Warning: KiiBank transfer {reader["Id"]} has foreign key violation, skipping record");
+                continue;
+            }
+        }
+
+        _logger.LogInfo($"Migrated {transactionCount} transactions and {transferCount} KiiBank transfers");
+    }
+
     private async Task<int> InsertTransactionAsync(
         NpgsqlConnection conn,
         IDataReader reader,
@@ -1157,9 +1333,28 @@ public class DataMigrationService
         var mfRate = GetDecimalOrNull(reader, "MFRate");
         transactionCmd.Parameters.AddWithValue("mfRate", mfRate.HasValue ? (object)mfRate.Value : DBNull.Value);
         
-        // Transfer metadata
-        transactionCmd.Parameters.AddWithValue("transferZero", reader["TransferZeroSenderId"]?.ToString() ?? (object)DBNull.Value);
-        transactionCmd.Parameters.AddWithValue("transferRef", reader["TransferReference"]?.ToString() ?? (object)DBNull.Value);
+        // Transfer metadata - handle missing columns safely
+        string? transferZero = null;
+        try
+        {
+            transferZero = reader["TransferZeroSenderId"]?.ToString();
+        }
+        catch
+        {
+            // Column doesn't exist, use null
+        }
+        transactionCmd.Parameters.AddWithValue("transferZero", transferZero ?? (object)DBNull.Value);
+        
+        string? transferRef = null;
+        try
+        {
+            transferRef = reader["TransferReference"]?.ToString();
+        }
+        catch
+        {
+            // Column doesn't exist, use null
+        }
+        transactionCmd.Parameters.AddWithValue("transferRef", transferRef ?? (object)DBNull.Value);
         
         // Reason for transfer - handle both "ReasonForTransfer" and "Reason" field names safely
         object? reasonField = null;
