@@ -5,9 +5,11 @@ using Microsoft.Extensions.Logging;
 using MoneyFex.Core.Entities;
 using MoneyFex.Core.Entities.Enums;
 using MoneyFex.Core.Interfaces;
+using MoneyFex.Core.Messages;
 using MoneyFex.Infrastructure.Data;
 using MoneyFex.Web.Services;
 using MoneyFex.Web.ViewModels;
+using System.Text.Json;
 
 namespace MoneyFex.Web.Controllers;
 
@@ -21,17 +23,20 @@ public class MobileMoneyTransferController : Controller
     private readonly IExchangeRateService _exchangeRateService;
     private readonly MoneyFexDbContext _context;
     private readonly TransactionLimitService _transactionLimitService;
+    private readonly ITransferQueueProducer _transferQueueProducer;
 
     public MobileMoneyTransferController(
         ILogger<MobileMoneyTransferController> logger,
         IExchangeRateService exchangeRateService,
         MoneyFexDbContext context,
-        TransactionLimitService transactionLimitService)
+        TransactionLimitService transactionLimitService,
+        ITransferQueueProducer transferQueueProducer)
     {
         _logger = logger;
         _exchangeRateService = exchangeRateService;
         _context = context;
         _transactionLimitService = transactionLimitService;
+        _transferQueueProducer = transferQueueProducer;
     }
 
     /// <summary>
@@ -793,6 +798,10 @@ public class MobileMoneyTransferController : Controller
                     transaction.SenderPaymentMode = PaymentMode.MobileWallet;
                     transaction.Status = TransactionStatus.Paid; // For POC, mark as paid
                     await _context.SaveChangesAsync();
+                    
+                    // Queue transfer for background processing AFTER payment is confirmed
+                    await QueueTransferForProcessingAsync(transaction, mobileTransfer);
+                    
                     return RedirectToAction("AddMoneyToWalletSuccess", new { transactionId = transaction.Id });
 
                 default:
@@ -809,6 +818,69 @@ public class MobileMoneyTransferController : Controller
     }
 
     #region Helper Methods
+
+    /// <summary>
+    /// Queue transfer for background processing after payment is confirmed
+    /// This should only be called when transaction status is Paid
+    /// </summary>
+    private async Task QueueTransferForProcessingAsync(Transaction transaction, MobileMoneyTransfer mobileTransfer)
+    {
+        try
+        {
+            // Only queue if payment is confirmed (status is Paid)
+            if (transaction.Status != TransactionStatus.Paid)
+            {
+                _logger.LogWarning(
+                    "Attempted to queue transfer before payment confirmation. TransactionId: {TransactionId}, Status: {Status}",
+                    transaction.Id, transaction.Status);
+                return;
+            }
+
+            // Check if transfer is already queued or processed
+            if (transaction.Status == TransactionStatus.InProgress || 
+                transaction.Status == TransactionStatus.Completed)
+            {
+                _logger.LogInformation(
+                    "Transfer already queued or processed. TransactionId: {TransactionId}, Status: {Status}",
+                    transaction.Id, transaction.Status);
+                return;
+            }
+
+            var queueMessage = new TransferQueueMessage
+            {
+                TransactionId = transaction.Id,
+                ReceiptNo = transaction.ReceiptNo,
+                TransferType = TransferType.MobileMoneyTransfer,
+                Payload = JsonSerializer.Serialize(new
+                {
+                    WalletId = mobileTransfer.WalletOperatorId,
+                    MobileNumber = mobileTransfer.PaidToMobileNo,
+                    ReceiverName = mobileTransfer.ReceiverName,
+                    ReceiverCity = mobileTransfer.ReceiverCity
+                }),
+                CreatedAt = DateTime.UtcNow,
+                RetryCount = 0
+            };
+
+            await _transferQueueProducer.EnqueueTransferAsync(queueMessage);
+
+            // Update transaction status to InProgress
+            transaction.Status = TransactionStatus.InProgress;
+            transaction.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Transfer queued for processing after payment confirmation. TransactionId: {TransactionId}, ReceiptNo: {ReceiptNo}",
+                transaction.Id, transaction.ReceiptNo);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to queue transfer after payment. TransactionId: {TransactionId}. Transfer will need to be processed manually.",
+                transaction.Id);
+            // Don't throw - payment is already confirmed, just logging failed
+        }
+    }
 
     private int GetSenderIdFromSession()
     {
@@ -1159,6 +1231,9 @@ public class MobileMoneyTransferController : Controller
                 "Card payment processed successfully. TransactionId: {TransactionId}, ReceiptNo: {ReceiptNo}",
                 transaction.Id, transaction.ReceiptNo);
 
+            // Queue transfer for background processing AFTER payment is confirmed
+            await QueueTransferForProcessingAsync(transaction, mobileTransfer);
+
             // Redirect to success page
             return RedirectToAction("AddMoneyToWalletSuccess", new { transactionId = transaction.Id });
         }
@@ -1264,6 +1339,9 @@ public class MobileMoneyTransferController : Controller
             _logger.LogInformation(
                 "Bank deposit confirmation submitted. TransactionId: {TransactionId}, ReceiptNo: {ReceiptNo}",
                 transaction.Id, transaction.ReceiptNo);
+
+            // Note: Transfer will be queued when bank deposit is actually confirmed
+            // (via webhook or manual confirmation process that updates status to Paid)
 
             // Redirect to success page (or pending confirmation page)
             return RedirectToAction("AddMoneyToWalletSuccess", new { transactionId = transaction.Id });

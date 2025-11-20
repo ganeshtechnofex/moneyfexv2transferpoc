@@ -1,5 +1,11 @@
+using Common.Kafka.Consumer;
+using Common.Kafka.Interfaces;
+using Common.Kafka.Producer;
+using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
+using MoneyFex.Core.Entities;
 using MoneyFex.Core.Interfaces;
+using MoneyFex.Core.Messages;
 using MoneyFex.Infrastructure.Data;
 using MoneyFex.Infrastructure.Repositories;
 using MoneyFex.Infrastructure.Services;
@@ -51,6 +57,42 @@ builder.Services.AddScoped<TransactionActivityService>();
 builder.Services.AddScoped<TransactionNoteService>();
 builder.Services.AddScoped<TransferMoneyNowService>();
 builder.Services.AddScoped<TransactionLimitService>();
+
+// Configure Kafka
+var consumerConfigCredentials = new ConsumerConfig
+{
+    SaslUsername = builder.Configuration["KafkaConfig:SaslUsername"],
+    BootstrapServers = builder.Configuration["KafkaConfig:BootstrapServers"],
+    SaslPassword = builder.Configuration["KafkaConfig:SaslPassword"],
+    SaslMechanism = SaslMechanism.Plain,
+    SecurityProtocol = SecurityProtocol.SaslSsl,
+};
+var producerConfigCredentials = new ProducerConfig
+{
+    SaslUsername = builder.Configuration["KafkaConfig:SaslUsername"],
+    BootstrapServers = builder.Configuration["KafkaConfig:BootstrapServers"],
+    SaslPassword = builder.Configuration["KafkaConfig:SaslPassword"],
+    SaslMechanism = SaslMechanism.Plain,
+    SecurityProtocol = SecurityProtocol.SaslSsl,
+    Acks = Acks.All
+};
+
+var producerConfig = new ProducerConfig(producerConfigCredentials);
+var consumerConfig = new ConsumerConfig(consumerConfigCredentials);
+
+builder.Services.AddSingleton(producerConfig);
+builder.Services.AddSingleton(consumerConfig);
+
+// Register Kafka producers and consumers
+builder.Services.AddSingleton(typeof(IKafkaProducer<,>), typeof(KafkaProducer<,>));
+builder.Services.AddSingleton(typeof(IKafkaConsumer<,>), typeof(KafkaConsumer<,>));
+
+// Register transfer queue producer
+builder.Services.AddScoped<ITransferQueueProducer, TransferQueueProducer>();
+
+// Register transfer processing handler and consumer
+builder.Services.AddScoped<IKafkaHandler<string, TransferQueueMessage>, TransferProcessingHandler>();
+builder.Services.AddHostedService<TransferProcessingBackgroundService>();
 
 var app = builder.Build();
 
