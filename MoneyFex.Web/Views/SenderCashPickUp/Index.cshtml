@@ -81,6 +81,7 @@
                         @Html.HiddenFor(model => model.ReceivingCountry)
                         @Html.HiddenFor(model => model.SenderId)
                         @Html.HiddenFor(model => model.CountryCode, new { @id = "CountryCodeHidden" })
+                        @Html.HiddenFor(model => model.IdempotencyKey, new { @id = "IdempotencyKey" })
 
                         <div class="form-group mb30">
                             <label asp-for="RecentReceiverId" class="form-label text-left w-100">Select Recent Receiver</label>
@@ -163,8 +164,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         $(document).ready(function () {
+            setIdempotencyKey("#IdempotencyKey");
             // Form submission handler
             $("#cashPickupForm").on("submit", function (e) {
+                setIdempotencyKey("#IdempotencyKey");
                 // Ensure CountryCode is set from dropdown or hidden field
                 var countryCode = $("#CountryCode").val();
                 if (countryCode) {
@@ -251,6 +254,25 @@
             }).fail(function () {
                 console.error("Error loading country phone code");
             });
+        }
+
+        function setIdempotencyKey(selector) {
+            var input = $(selector);
+            if (!input.length) {
+                return;
+            }
+
+            if (!input.val()) {
+                input.val(generateIdempotencyKey());
+            }
+        }
+
+        function generateIdempotencyKey() {
+            if (window.crypto && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+
+            return "idem-" + Date.now() + "-" + Math.random().toString(36).slice(2);
         }
     </script>
 }

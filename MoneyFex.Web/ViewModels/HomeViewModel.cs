@@ -57,6 +57,8 @@ public class TransferSummaryViewModel
     public string ReceivingCurrencySymbol { get; set; } = string.Empty;
     public decimal TotalSendingAmount { get; set; }
     public string ReceivingCountryFlag { get; set; } = string.Empty;
+
+    public string IdempotencyKey { get; set; } = string.Empty;
 }
 
 public class ValidationResult

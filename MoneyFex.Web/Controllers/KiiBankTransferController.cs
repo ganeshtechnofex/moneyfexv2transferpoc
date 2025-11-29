@@ -5,6 +5,7 @@ using MoneyFex.Core.Entities;
 using MoneyFex.Core.Entities.Enums;
 using MoneyFex.Core.Interfaces;
 using MoneyFex.Infrastructure.Data;
+using MoneyFex.Web.Services;
 using MoneyFex.Web.ViewModels;
 using System.Text.Json;
 
@@ -24,12 +25,14 @@ public class KiiBankTransferController : Controller
     private readonly ITransactionRepository _transactionRepository;
     private readonly IKiiBankTransferRepository _kiiBankTransferRepository;
     private readonly MoneyFexDbContext _context;
+    private readonly ITransactionIdempotencyService _idempotencyService;
     
     private const string KIIBANK_RECIPIENT_SESSION_KEY = "KiiBankRecipientViewModel";
     private const string COMMON_ENTER_AMOUNT_SESSION_KEY = "CommonEnterAmountViewModel";
     private const string PAYMENT_METHOD_SESSION_KEY = "PaymentMethodViewModel";
     private const string TRANSACTION_ID_SESSION_KEY = "TransactionId";
     private const string DEBIT_CREDIT_CARD_DETAIL_SESSION_KEY = "CreditDebitCardViewModel";
+    private const string KIIBANK_IDEMPOTENCY_KEY = "KiiBankTransferIdempotencyKey";
 
     public KiiBankTransferController(
         IKiiBankAccountValidationService kiiBankAccountValidationService,
@@ -38,7 +41,8 @@ public class KiiBankTransferController : Controller
         IKiiBankTransferService kiiBankTransferService,
         ITransactionRepository transactionRepository,
         IKiiBankTransferRepository kiiBankTransferRepository,
-        MoneyFexDbContext context)
+        MoneyFexDbContext context,
+        ITransactionIdempotencyService idempotencyService)
     {
         _kiiBankAccountValidationService = kiiBankAccountValidationService;
         _exchangeRateService = exchangeRateService;
@@ -47,6 +51,7 @@ public class KiiBankTransferController : Controller
         _transactionRepository = transactionRepository;
         _kiiBankTransferRepository = kiiBankTransferRepository;
         _context = context;
+        _idempotencyService = idempotencyService;
     }
 
     /// <summary>
@@ -282,6 +287,8 @@ public class KiiBankTransferController : Controller
         try
         {
             var model = GetTransferSummary();
+            var idempotencyKey = GetOrCreateIdempotencyKey(model.IdempotencyKey);
+            model.IdempotencyKey = idempotencyKey;
             return View(model);
         }
         catch (Exception ex)
@@ -307,7 +314,10 @@ public class KiiBankTransferController : Controller
         {
             return View(GetTransferSummary());
         }
-        
+
+        var idempotencyKey = GetOrCreateIdempotencyKey(model.IdempotencyKey);
+        model.IdempotencyKey = idempotencyKey;
+
         try
         {
             // Get data from session
@@ -370,6 +380,15 @@ public class KiiBankTransferController : Controller
             var sender = await GetOrCreateSenderAsync(senderId, sendingCountryCode);
             senderId = sender.Id; // Use the actual sender ID (might be newly created)
             
+            if (transaction == null && !string.IsNullOrEmpty(idempotencyKey))
+            {
+                transaction = await _idempotencyService.FindExistingAsync(senderId, idempotencyKey);
+                if (transaction != null)
+                {
+                    HttpContext.Session.SetInt32(TRANSACTION_ID_SESSION_KEY, transaction.Id);
+                }
+            }
+            
             // Validate recipient data
             var accountNumber = !string.IsNullOrEmpty(recipient.AccountNumber) ? recipient.AccountNumber : "N/A";
             var accountName = !string.IsNullOrEmpty(recipient.AccountName) ? recipient.AccountName : "N/A";
@@ -395,6 +414,7 @@ public class KiiBankTransferController : Controller
                     Status = TransactionStatus.PaymentPending,
                     TransactionModule = TransactionModule.Sender,
                     ReasonForTransfer = recipient.ReasonForTransfer,
+                    IdempotencyKey = idempotencyKey,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -440,6 +460,7 @@ public class KiiBankTransferController : Controller
                 transaction.TotalAmount = paymentInfo.TotalAmount;
                 transaction.ExchangeRate = paymentInfo.ExchangeRate;
                 transaction.ReasonForTransfer = recipient.ReasonForTransfer;
+                transaction.IdempotencyKey = idempotencyKey;
                 transaction.UpdatedAt = DateTime.UtcNow;
                 
                 // Update Transaction with RecipientId if available
@@ -1058,6 +1079,7 @@ public class KiiBankTransferController : Controller
                 }
             }
 
+            model.IdempotencyKey = HttpContext.Session.GetString(KIIBANK_IDEMPOTENCY_KEY) ?? string.Empty;
             return model;
         }
         catch (Exception ex)
@@ -1079,9 +1101,19 @@ public class KiiBankTransferController : Controller
                 Fee = 0,
                 TotalSendingAmount = 0,
                 ReceivingAmount = 0,
-                ReceivingCountryFlag = "ng"
+                ReceivingCountryFlag = "ng",
+                IdempotencyKey = HttpContext.Session.GetString(KIIBANK_IDEMPOTENCY_KEY) ?? string.Empty
             };
         }
+    }
+
+    private string GetOrCreateIdempotencyKey(string? providedKey)
+    {
+        var normalized = _idempotencyService.NormalizeKey(providedKey) ??
+            _idempotencyService.NormalizeKey(HttpContext.Session.GetString(KIIBANK_IDEMPOTENCY_KEY));
+        var key = string.IsNullOrEmpty(normalized) ? _idempotencyService.GenerateKey() : normalized;
+        HttpContext.Session.SetString(KIIBANK_IDEMPOTENCY_KEY, key);
+        return key;
     }
 
     /// <summary>

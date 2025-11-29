@@ -66,5 +66,7 @@ public class MobileMoneyTransferViewModel
     
     // Sender ID for tracking
     public int? SenderId { get; set; }
+
+    public string IdempotencyKey { get; set; } = string.Empty;
 }
 

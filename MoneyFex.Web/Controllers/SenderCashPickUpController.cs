@@ -19,12 +19,14 @@ public class SenderCashPickUpController(
     ILogger<SenderCashPickUpController> logger,
     IExchangeRateService exchangeRateService,
     MoneyFexDbContext context,
-    TransactionLimitService transactionLimitService) : Controller
+    TransactionLimitService transactionLimitService,
+    ITransactionIdempotencyService idempotencyService) : Controller
 {
     private readonly ILogger<SenderCashPickUpController> _logger = logger;
     private readonly IExchangeRateService _exchangeRateService = exchangeRateService;
     private readonly MoneyFexDbContext _context = context;
     private readonly TransactionLimitService _transactionLimitService = transactionLimitService;
+    private readonly ITransactionIdempotencyService _idempotencyService = idempotencyService;
 
     /// <summary>
     /// GET: SenderCashPickUp/Index
@@ -158,6 +160,16 @@ public class SenderCashPickUpController(
         {
             var senderId = GetSenderIdFromSession();
             model.SenderId = senderId;
+
+            var normalizedIdempotencyKey = _idempotencyService.NormalizeKey(model.IdempotencyKey);
+            if (!string.IsNullOrEmpty(normalizedIdempotencyKey))
+            {
+                var existingTransaction = await _idempotencyService.FindExistingAsync(senderId, normalizedIdempotencyKey);
+                if (existingTransaction != null)
+                {
+                    return RedirectToAction("CashPickUpSummary", new { transactionId = existingTransaction.Id });
+                }
+            }
 
             // Ensure CountryCode is never null or empty
             if (string.IsNullOrWhiteSpace(model.CountryCode))
@@ -308,6 +320,9 @@ public class SenderCashPickUpController(
             }
 
             // Create transaction
+            var idempotencyKeyToUse = normalizedIdempotencyKey ?? _idempotencyService.GenerateKey();
+            model.IdempotencyKey = idempotencyKeyToUse;
+
             var transaction = new Transaction
             {
                 ReceiptNo = receiptNo,
@@ -325,6 +340,7 @@ public class SenderCashPickUpController(
                 Status = TransactionStatus.PaymentPending,
                 TransactionModule = TransactionModule.Sender,
                 SenderPaymentMode = PaymentMode.Card, // Will be updated after payment
+                IdempotencyKey = idempotencyKeyToUse,
                 ReasonForTransfer = model.Reason,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow

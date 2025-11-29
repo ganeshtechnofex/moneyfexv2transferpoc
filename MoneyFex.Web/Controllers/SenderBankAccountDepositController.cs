@@ -21,17 +21,20 @@ public class SenderBankAccountDepositController : Controller
     private readonly IExchangeRateService _exchangeRateService;
     private readonly MoneyFexDbContext _context;
     private readonly TransactionLimitService _transactionLimitService;
+    private readonly ITransactionIdempotencyService _idempotencyService;
 
     public SenderBankAccountDepositController(
         ILogger<SenderBankAccountDepositController> logger,
         IExchangeRateService exchangeRateService,
         MoneyFexDbContext context,
-        TransactionLimitService transactionLimitService)
+        TransactionLimitService transactionLimitService,
+        ITransactionIdempotencyService idempotencyService)
     {
         _logger = logger;
         _exchangeRateService = exchangeRateService;
         _context = context;
         _transactionLimitService = transactionLimitService;
+        _idempotencyService = idempotencyService;
     }
 
     /// <summary>
@@ -187,6 +190,18 @@ public class SenderBankAccountDepositController : Controller
             var senderId = GetSenderIdFromSession();
             model.SenderId = senderId;
 
+            var normalizedIdempotencyKey = _idempotencyService.NormalizeKey(model.IdempotencyKey);
+            if (!string.IsNullOrEmpty(normalizedIdempotencyKey))
+            {
+                var existingTransaction = await _idempotencyService.FindExistingAsync(senderId, normalizedIdempotencyKey);
+                if (existingTransaction != null)
+                {
+                    HttpContext.Session.SetInt32("BankDepositTransactionId", existingTransaction.Id);
+                    HttpContext.Session.SetString("BankDepositReceiptNo", existingTransaction.ReceiptNo);
+                    return RedirectToAction("BankDepositAbroadSummary", new { transactionId = existingTransaction.Id });
+                }
+            }
+
             // Get sender with country information
             var sender = await _context.Senders
                 .Include(s => s.Country)
@@ -268,6 +283,9 @@ public class SenderBankAccountDepositController : Controller
             }
 
             // Create transaction
+            var idempotencyKeyToUse = normalizedIdempotencyKey ?? _idempotencyService.GenerateKey();
+            model.IdempotencyKey = idempotencyKeyToUse;
+
             var transaction = new Transaction
             {
                 ReceiptNo = receiptNo,
@@ -285,6 +303,7 @@ public class SenderBankAccountDepositController : Controller
                 Status = TransactionStatus.PaymentPending,
                 TransactionModule = TransactionModule.Sender,
                 SenderPaymentMode = PaymentMode.Card, // Will be updated after payment
+                IdempotencyKey = idempotencyKeyToUse,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

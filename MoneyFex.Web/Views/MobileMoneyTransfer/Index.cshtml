@@ -22,6 +22,7 @@
     @Html.HiddenFor(m => m.ReceivingCurrency)
     @Html.HiddenFor(m => m.SendingCountry)
     @Html.HiddenFor(m => m.ReceivingCountry)
+    @Html.HiddenFor(m => m.IdempotencyKey)
 
     <div class="real_form pattern2 pdt40">
         <div class="container">
@@ -384,6 +385,7 @@
 
             // Form submission handler
             $("#mobileTransferForm").on("submit", function (e) {
+                setIdempotencyKey("#IdempotencyKey");
                 // Show loader if it exists
                 if ($("#loader").length) {
                     $("#loader").show();
@@ -391,6 +393,8 @@
                 // Allow form to submit normally
                 return true;
             });
+
+            setIdempotencyKey("#IdempotencyKey");
 
             // Initialize phone code and email div on page load
             if ($("#CountryCode").val()) {
@@ -414,6 +418,25 @@
                 checkifFlutterWaveApi();
             });
         });
+
+        function setIdempotencyKey(selector) {
+            var input = $(selector);
+            if (!input.length) {
+                return;
+            }
+
+            if (!input.val()) {
+                input.val(generateIdempotencyKey());
+            }
+        }
+
+        function generateIdempotencyKey() {
+            if (window.crypto && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+
+            return "idem-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+        }
     </script>
 }
 

@@ -99,5 +99,7 @@ public class SenderBankAccountDepositViewModel
     public decimal ExchangeRate { get; set; }
     public decimal Fee { get; set; }
     public decimal TotalAmount { get; set; }
+
+    public string IdempotencyKey { get; set; } = string.Empty;
 }
 

@@ -57,6 +57,7 @@ builder.Services.AddScoped<TransactionActivityService>();
 builder.Services.AddScoped<TransactionNoteService>();
 builder.Services.AddScoped<TransferMoneyNowService>();
 builder.Services.AddScoped<TransactionLimitService>();
+builder.Services.AddScoped<ITransactionIdempotencyService, TransactionIdempotencyService>();
 
 // Configure Kafka
 var consumerConfigCredentials = new ConsumerConfig
@@ -66,6 +67,7 @@ var consumerConfigCredentials = new ConsumerConfig
     SaslPassword = builder.Configuration["KafkaConfig:SaslPassword"],
     SaslMechanism = SaslMechanism.Plain,
     SecurityProtocol = SecurityProtocol.SaslSsl,
+    Acks = Acks.All
 };
 var producerConfigCredentials = new ProducerConfig
 {

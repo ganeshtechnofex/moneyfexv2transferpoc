@@ -51,5 +51,7 @@ public class SenderCashPickUpViewModel
     public decimal TotalAmount { get; set; }
     public int SenderId { get; set; }
     public string CountryPhoneCode { get; set; } = string.Empty;
+
+    public string IdempotencyKey { get; set; } = string.Empty;
 }
 

@@ -127,6 +127,7 @@ public class MoneyFexDbContext : DbContext
             entity.HasIndex(e => e.SenderId);
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.PaymentReference);
+            entity.HasIndex(e => e.IdempotencyKey).IsUnique();
             
             // Configure enums as integers
             entity.Property(e => e.Status)
@@ -146,6 +147,7 @@ public class MoneyFexDbContext : DbContext
             entity.Property(e => e.PayingStaffName).HasMaxLength(200);
             entity.Property(e => e.TransferZeroSenderId).HasMaxLength(100);
             entity.Property(e => e.TransferReference).HasMaxLength(100);
+            entity.Property(e => e.IdempotencyKey).HasMaxLength(100);
             
             // Configure decimal properties with precision
             entity.Property(e => e.AgentCommission).HasPrecision(18, 2);

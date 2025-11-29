@@ -83,6 +83,7 @@
                         @Html.HiddenFor(model => model.ReceivingCurrency)
                         @Html.HiddenFor(model => model.SendingCountry)
                         @Html.HiddenFor(model => model.ReceivingCountry)
+                        @Html.HiddenFor(model => model.IdempotencyKey, new { @id = "IdempotencyKey" })
                         
                         <div class="form-group">
                             <div class="col-lg-10 col-xs-8 text-left">
@@ -259,12 +260,14 @@
     <partial name="_ValidationScriptsPartial" />
     <script type="text/javascript">
         $("#submit").click(function () {
+            setIdempotencyKey("#IdempotencyKey");
             if ($("#loader").length) {
                 $("#loader").show();
             }
             $("form").submit();
         })
 
+        setIdempotencyKey("#IdempotencyKey");
         Filter();
         function Filter() {
             var isBusiness = $("#IsBusiness")[0].checked;
@@ -324,6 +327,25 @@
             var ownerName = $("#AccountOwnerName").val();
             var name = ownerName.replace(/\s\s+/g, ' ');
             $("#AccountOwnerName").val(name);
+        }
+
+        function setIdempotencyKey(selector) {
+            var input = $(selector);
+            if (!input.length) {
+                return;
+            }
+
+            if (!input.val()) {
+                input.val(generateIdempotencyKey());
+            }
+        }
+
+        function generateIdempotencyKey() {
+            if (window.crypto && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+
+            return "idem-" + Date.now() + "-" + Math.random().toString(36).slice(2);
         }
         
         checkifFlutterWaveApi();

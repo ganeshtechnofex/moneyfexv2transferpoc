@@ -36,6 +36,7 @@ public class Transaction
     public TransactionStatus Status { get; set; }
     public ApiService? ApiService { get; set; }
     public string? TransferReference { get; set; }
+    public string? IdempotencyKey { get; set; }
     public int? RecipientId { get; set; }
     
     // Compliance information

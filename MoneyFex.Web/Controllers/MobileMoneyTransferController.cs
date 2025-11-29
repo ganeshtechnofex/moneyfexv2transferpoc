@@ -24,19 +24,22 @@ public class MobileMoneyTransferController : Controller
     private readonly MoneyFexDbContext _context;
     private readonly TransactionLimitService _transactionLimitService;
     private readonly ITransferQueueProducer _transferQueueProducer;
+    private readonly ITransactionIdempotencyService _idempotencyService;
 
     public MobileMoneyTransferController(
         ILogger<MobileMoneyTransferController> logger,
         IExchangeRateService exchangeRateService,
         MoneyFexDbContext context,
         TransactionLimitService transactionLimitService,
-        ITransferQueueProducer transferQueueProducer)
+        ITransferQueueProducer transferQueueProducer,
+        ITransactionIdempotencyService idempotencyService)
     {
         _logger = logger;
         _exchangeRateService = exchangeRateService;
         _context = context;
         _transactionLimitService = transactionLimitService;
         _transferQueueProducer = transferQueueProducer;
+        _idempotencyService = idempotencyService;
     }
 
     /// <summary>
@@ -203,6 +206,18 @@ public class MobileMoneyTransferController : Controller
             // Get sender ID
             var senderId = GetSenderIdFromSession();
 
+            var normalizedIdempotencyKey = _idempotencyService.NormalizeKey(model.IdempotencyKey);
+            if (!string.IsNullOrEmpty(normalizedIdempotencyKey))
+            {
+                var existingTransaction = await _idempotencyService.FindExistingAsync(senderId, normalizedIdempotencyKey);
+                if (existingTransaction != null)
+                {
+                    HttpContext.Session.SetInt32("MobileTransferTransactionId", existingTransaction.Id);
+                    HttpContext.Session.SetString("MobileTransferReceiptNo", existingTransaction.ReceiptNo);
+                    return RedirectToAction("MobileSummaryAbroad", new { transactionId = existingTransaction.Id });
+                }
+            }
+
             // Get countries and wallets for dropdowns
             var countries = await _context.Countries
                 .Where(c => c.IsActive)
@@ -333,6 +348,9 @@ public class MobileMoneyTransferController : Controller
                 var sender = await GetOrCreateSenderAsync(senderId, sendingCountry);
 
                 // Create transaction
+                var idempotencyKeyToUse = normalizedIdempotencyKey ?? _idempotencyService.GenerateKey();
+                model.IdempotencyKey = idempotencyKeyToUse;
+
                 var transaction = new Transaction
                 {
                     ReceiptNo = receiptNo,
@@ -350,6 +368,7 @@ public class MobileMoneyTransferController : Controller
                     Status = TransactionStatus.PaymentPending,
                     TransactionModule = TransactionModule.Sender,
                     SenderPaymentMode = PaymentMode.Card, // Will be updated after payment
+                    IdempotencyKey = idempotencyKeyToUse,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };

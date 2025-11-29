@@ -5,6 +5,7 @@
 }
 @using (Html.BeginForm())
 {
+    @Html.HiddenFor(model => model.IdempotencyKey, new { @id = "IdempotencyKey" })
     <div class="real_form pattern2 pdt40 ">
         <div class="container">
             <div class="row">
@@ -185,11 +186,33 @@
 
     <script type="text/javascript">
 
+        setIdempotencyKey("#IdempotencyKey");
+
         $("#submit").click(function () {
 
+            setIdempotencyKey("#IdempotencyKey");
             $("#loader").show();
             $("form").submit();
         })
+
+        function setIdempotencyKey(selector) {
+            var input = $(selector);
+            if (!input.length) {
+                return;
+            }
+
+            if (!input.val()) {
+                input.val(generateIdempotencyKey());
+            }
+        }
+
+        function generateIdempotencyKey() {
+            if (window.crypto && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+
+            return "idem-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+        }
 
     </script>
 }
