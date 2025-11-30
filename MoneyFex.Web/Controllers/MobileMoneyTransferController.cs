@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using MoneyFex.Core.Entities;
 using MoneyFex.Core.Entities.Enums;
 using MoneyFex.Core.Interfaces;
-using MoneyFex.Core.Messages;
 using MoneyFex.Infrastructure.Data;
 using MoneyFex.Web.Services;
 using MoneyFex.Web.ViewModels;
@@ -23,7 +22,6 @@ public class MobileMoneyTransferController : Controller
     private readonly IExchangeRateService _exchangeRateService;
     private readonly MoneyFexDbContext _context;
     private readonly TransactionLimitService _transactionLimitService;
-    private readonly ITransferQueueProducer _transferQueueProducer;
     private readonly ITransactionIdempotencyService _idempotencyService;
 
     public MobileMoneyTransferController(
@@ -31,14 +29,12 @@ public class MobileMoneyTransferController : Controller
         IExchangeRateService exchangeRateService,
         MoneyFexDbContext context,
         TransactionLimitService transactionLimitService,
-        ITransferQueueProducer transferQueueProducer,
         ITransactionIdempotencyService idempotencyService)
     {
         _logger = logger;
         _exchangeRateService = exchangeRateService;
         _context = context;
         _transactionLimitService = transactionLimitService;
-        _transferQueueProducer = transferQueueProducer;
         _idempotencyService = idempotencyService;
     }
 
@@ -818,8 +814,8 @@ public class MobileMoneyTransferController : Controller
                     transaction.Status = TransactionStatus.Paid; // For POC, mark as paid
                     await _context.SaveChangesAsync();
                     
-                    // Queue transfer for background processing AFTER payment is confirmed
-                    await QueueTransferForProcessingAsync(transaction, mobileTransfer);
+                    // Payment confirmed - transaction is ready for processing
+                    // Note: Background processing removed (Kafka removed)
                     
                     return RedirectToAction("AddMoneyToWalletSuccess", new { transactionId = transaction.Id });
 
@@ -838,68 +834,6 @@ public class MobileMoneyTransferController : Controller
 
     #region Helper Methods
 
-    /// <summary>
-    /// Queue transfer for background processing after payment is confirmed
-    /// This should only be called when transaction status is Paid
-    /// </summary>
-    private async Task QueueTransferForProcessingAsync(Transaction transaction, MobileMoneyTransfer mobileTransfer)
-    {
-        try
-        {
-            // Only queue if payment is confirmed (status is Paid)
-            if (transaction.Status != TransactionStatus.Paid)
-            {
-                _logger.LogWarning(
-                    "Attempted to queue transfer before payment confirmation. TransactionId: {TransactionId}, Status: {Status}",
-                    transaction.Id, transaction.Status);
-                return;
-            }
-
-            // Check if transfer is already queued or processed
-            if (transaction.Status == TransactionStatus.InProgress || 
-                transaction.Status == TransactionStatus.Completed)
-            {
-                _logger.LogInformation(
-                    "Transfer already queued or processed. TransactionId: {TransactionId}, Status: {Status}",
-                    transaction.Id, transaction.Status);
-                return;
-            }
-
-            var queueMessage = new TransferQueueMessage
-            {
-                TransactionId = transaction.Id,
-                ReceiptNo = transaction.ReceiptNo,
-                TransferType = TransferType.MobileMoneyTransfer,
-                Payload = JsonSerializer.Serialize(new
-                {
-                    WalletId = mobileTransfer.WalletOperatorId,
-                    MobileNumber = mobileTransfer.PaidToMobileNo,
-                    ReceiverName = mobileTransfer.ReceiverName,
-                    ReceiverCity = mobileTransfer.ReceiverCity
-                }),
-                CreatedAt = DateTime.UtcNow,
-                RetryCount = 0
-            };
-
-            await _transferQueueProducer.EnqueueTransferAsync(queueMessage);
-
-            // Update transaction status to InProgress
-            transaction.Status = TransactionStatus.InProgress;
-            transaction.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation(
-                "Transfer queued for processing after payment confirmation. TransactionId: {TransactionId}, ReceiptNo: {ReceiptNo}",
-                transaction.Id, transaction.ReceiptNo);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Failed to queue transfer after payment. TransactionId: {TransactionId}. Transfer will need to be processed manually.",
-                transaction.Id);
-            // Don't throw - payment is already confirmed, just logging failed
-        }
-    }
 
     private int GetSenderIdFromSession()
     {
@@ -1250,8 +1184,8 @@ public class MobileMoneyTransferController : Controller
                 "Card payment processed successfully. TransactionId: {TransactionId}, ReceiptNo: {ReceiptNo}",
                 transaction.Id, transaction.ReceiptNo);
 
-            // Queue transfer for background processing AFTER payment is confirmed
-            await QueueTransferForProcessingAsync(transaction, mobileTransfer);
+            // Payment confirmed - transaction is ready for processing
+            // Note: Background processing removed (Kafka removed)
 
             // Redirect to success page
             return RedirectToAction("AddMoneyToWalletSuccess", new { transactionId = transaction.Id });
