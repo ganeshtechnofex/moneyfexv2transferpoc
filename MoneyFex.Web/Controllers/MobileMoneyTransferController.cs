@@ -815,7 +815,6 @@ public class MobileMoneyTransferController : Controller
                     await _context.SaveChangesAsync();
                     
                     // Payment confirmed - transaction is ready for processing
-                    // Note: Background processing removed (Kafka removed)
                     
                     return RedirectToAction("AddMoneyToWalletSuccess", new { transactionId = transaction.Id });
 
@@ -1185,7 +1184,6 @@ public class MobileMoneyTransferController : Controller
                 transaction.Id, transaction.ReceiptNo);
 
             // Payment confirmed - transaction is ready for processing
-            // Note: Background processing removed (Kafka removed)
 
             // Redirect to success page
             return RedirectToAction("AddMoneyToWalletSuccess", new { transactionId = transaction.Id });
